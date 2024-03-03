@@ -12,8 +12,8 @@ void MC_plot(bool isCut = 1){
 	//Histogram
 	TH1D *mc_reco_Zmass = new TH1D("mc_reco_Zmass","mc_reco_Zmass",120,60,120);
 	TH1D *h_p_1 = new TH1D("h_p_1","Pull",120,60,120);
-	TH1D *mc_gen_Zmass = new TH1D("mc_gen_Zmass","mc_gen_Zmass",120,60,120);
-	TH1D *h_p_2 = new TH1D("h_p_2","Pull",120,60,120);
+	TH1D *mc_gen_Zmass = new TH1D("mc_gen_Zmass","mc_gen_Zmass",120,61.1876,121.1876);
+	TH1D *h_p_2 = new TH1D("h_p_2","Pull",120,61.1876,121.1876);
 
 	//Canvas
 	TCanvas *c1 = new TCanvas("","",800,600);
@@ -32,14 +32,24 @@ void MC_plot(bool isCut = 1){
 	for (int i=0; i<nentries; i++){
 		if (i%100000 == 0) cout << "Event " << i << endl;
 		obj1->t1->GetEntry(i);
+		//if (obj1->candSize > obj1->candSize_gen) cout << "Larger" << endl;
 		eventnotpassed = obj1->SetupCut();
-		if (isCut && eventnotpassed) continue; // using cut and not passed, skip event
+		obj1->Calc_Z_gen(mc_gen_Zmass); // ahead of everything so gen cut is not affect by reco cut
 
+		if (isCut && eventnotpassed) continue; // using cut and not passed, skip event
+		bool isTau = 0;
+		for (int k=0; k<obj1->candSize_gen; k++){
+			if (obj1->DecayID_gen[k] == 15) {
+				//cout << "Skip Tau Event !" << endl;
+				isTau = 1;
+				break;
+			}
+		}
+		if (isTau) continue;
 		for (int j=0;j<obj1->candSize; j++){
-			if (obj1->mass[j] < 60 || obj1->mass[j] >= 120 || obj1->DecayID_gen[j] == 15) continue; 
+			if (obj1->mass[j] < 60 || obj1->mass[j] >= 120 ) continue;
 			mc_reco_Zmass->Fill(obj1->mass[j],obj1->weightLHE_gen->at(1080)/10000.0);
 		}
-		obj1->Calc_Z_gen(mc_gen_Zmass);
 	}
 
 

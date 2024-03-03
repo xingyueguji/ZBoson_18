@@ -48,6 +48,8 @@ class MC_18{
 	Float_t pTD2_gen[5000] = {};
 	Float_t EtaD2_gen[5000] = {};
 	Float_t PhiD2_gen[5000] = {};
+	Int_t PIDD2_gen[5000] = {};
+	Int_t PIDD1_gen[5000] = {};
 
 
 	Int_t nentries = 0;
@@ -110,6 +112,8 @@ void MC_18::SetupBranches(){
 	t1->SetBranchStatus("pTD2_gen",1);
 	t1->SetBranchStatus("EtaD2_gen",1);
 	t1->SetBranchStatus("PhiD2_gen",1);
+	t1->SetBranchStatus("PIDD2_gen",1);
+	t1->SetBranchStatus("PIDD1_gen",1);
 	//Link to variables
 	t1->SetBranchAddress("candSize",&candSize);
 	t1->SetBranchAddress("centrality",&centrality);
@@ -129,13 +133,15 @@ void MC_18::SetupBranches(){
 	t1->SetBranchAddress("weightLHE_gen",&weightLHE_gen);
 	t1->SetBranchAddress("candSize_gen",&candSize_gen);
 	t1->SetBranchAddress("weight_gen",&weight_gen);
-	t1->SetBranchAddress("DecayID_gen",&DecayID_gen);
-	t1->SetBranchAddress("pTD1_gen",&pTD1_gen);
-	t1->SetBranchAddress("EtaD1_gen",&EtaD1_gen);
-	t1->SetBranchAddress("PhiD1_gen",&PhiD1_gen);
-	t1->SetBranchAddress("pTD2_gen",&pTD2_gen);
-	t1->SetBranchAddress("EtaD2_gen",&EtaD2_gen);
-	t1->SetBranchAddress("PhiD2_gen",&PhiD2_gen);
+	t1->SetBranchAddress("DecayID_gen",DecayID_gen);
+	t1->SetBranchAddress("pTD1_gen",pTD1_gen);
+	t1->SetBranchAddress("EtaD1_gen",EtaD1_gen);
+	t1->SetBranchAddress("PhiD1_gen",PhiD1_gen);
+	t1->SetBranchAddress("pTD2_gen",pTD2_gen);
+	t1->SetBranchAddress("EtaD2_gen",EtaD2_gen);
+	t1->SetBranchAddress("PhiD2_gen",PhiD2_gen);
+	t1->SetBranchAddress("PIDD2_gen",PIDD2_gen);
+	t1->SetBranchAddress("PIDD1_gen",PIDD1_gen);
 }
 bool MC_18::SetupCut(){
 	int isPassed = 0;
@@ -183,7 +189,7 @@ void MC_18::Plot_and_Pull(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* 
 		double bincontent = hist->GetBinContent(i);
 		double pullvalue = (bincontent - fitresult) / binerror;
 		hist2->SetBinContent(i,pullvalue);
-		hist2->SetBinError(i,0.5);
+		hist2->SetBinError(i,1);
 	}
 	hist2->GetYaxis()->SetLabelSize(0.08);
 	hist2->GetXaxis()->SetLabelSize(0.1);
@@ -203,8 +209,8 @@ void MC_18::Plot_and_Pull_gen(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TP
 	gStyle->SetOptFit(1);
 	hist2->GetXaxis()->SetTitle("Invariant Mass(GeV)");
 	c1->cd();
-	//TF1 *fit = new TF1("voigt","[0]*TMath::Voigt(x-[1]-91.1876,[2],[3]+2.4955)",60,120);
-	TF1 *fit = new TF1("BreitWigner","[0]*TMath::BreitWigner(x, [1]+91.1876, [2]+2.4955)",60,120);
+	TF1 *fit = new TF1("voigt","[0]*TMath::Voigt(x-[1]-91.1876,[2],[3]+2.4955)",61.1876,121.1876);
+	//TF1 *fit = new TF1("BreitWigner","[0]*TMath::BreitWigner(x, [1]+91.1876, [2]+2.4955)",60,120);
 	int numBins = hist->GetNbinsX();
 	int maxBin = hist->GetMaximumBin();
 	fit->SetParameter(0,20000);
@@ -232,7 +238,7 @@ void MC_18::Plot_and_Pull_gen(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TP
 		double bincontent = hist->GetBinContent(i);
 		double pullvalue = (bincontent - fitresult) / binerror;
 		hist2->SetBinContent(i,pullvalue);
-		hist2->SetBinError(i,0.5);
+		hist2->SetBinError(i,1);
 	}
 	hist2->GetYaxis()->SetLabelSize(0.08);
 	hist2->GetXaxis()->SetLabelSize(0.1);
@@ -251,11 +257,15 @@ void MC_18::Plot_and_Pull_gen(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TP
 void MC_18::Calc_Z_gen(TH1D* h1){
 	for (int i=0; i<this->candSize_gen; i++){
 		TLorentzVector muon1;
+		if (abs(PIDD2_gen[i]) != 13 || abs(PIDD1_gen[i]) !=13) continue;
 		Float_t pt_muon_1 = this->pTD1_gen[i];
 		Float_t pt_muon_2 = this->pTD2_gen[i];
 		Float_t eta_muon_1 = this->EtaD1_gen[i];
 		Float_t eta_muon_2 = this->EtaD2_gen[i];
 		if (pt_muon_1 < 20 || pt_muon_2 < 20 || abs(eta_muon_1) > 2.4 || abs(eta_muon_2) > 2.4) continue;
+		if (this->DecayID_gen[i] != 15 && this->DecayID_gen[i] != 23) cout << "??????????????" << this->DecayID_gen[i] << endl;
+		if (this->DecayID_gen[i] != 23) continue;
+
 		Float_t phi_muon_1 = this->PhiD1_gen[i];
 		Float_t phi_muon_2 = this->PhiD2_gen[i];
 		muon1.SetPtEtaPhiM(pt_muon_1,eta_muon_1,phi_muon_1,0.105);
@@ -263,7 +273,7 @@ void MC_18::Calc_Z_gen(TH1D* h1){
 		muon2.SetPtEtaPhiM(pt_muon_2,eta_muon_2,phi_muon_2,0.105);
 		TLorentzVector ZBoson = muon1 + muon2;
 		Float_t M = ZBoson.M();
-		if (M < 60 || M >= 120) continue;
-		h1->Fill(M,this->weight_gen/10000);
+		if (M < 61.1876 || M >= 121.1876) continue;
+		h1->Fill(M,this->weightLHE_gen->at(1080)/10000);
 	}
 }
