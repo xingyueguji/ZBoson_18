@@ -5,19 +5,25 @@ class MC_18{
 	MC_18();
 	~MC_18();
 	
-	void SetupRootfile();
+	void SetupRootfile(Int_t x);
 	void SetupBranches();
-	bool SetupCut();
+	//bool SetupCut();
 	void Plot_and_Pull(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* p2);
 	void Plot_and_Pull_gen(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* p2);
     void Calc_Z_gen(TH1D* h1);
 	
 
-	//TString MC_File_Path = "/eos/cms/store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
-	TString MC_File_Path = "./VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
+	TString MC_File_Path = "/eos/cms/store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
+	//TString MC_File_Path = "./VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
+	TString MC_W_File_Path = "/eos/cms/store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_WJetsToLNu_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
 	TFile *f1;
 	TDirectoryFile *dir1;
 	TTree *t1;
+
+    TFile *f2;
+	TDirectoryFile *dir2;
+	TTree *t2;
+	
 
 
     //These are reco level;
@@ -36,6 +42,10 @@ class MC_18{
 	Float_t EtaD2[5000] = {};
 	Float_t PhiD2[5000] = {};
 	Short_t chargeD2[5000] = {};
+	Int_t PIDD2[5000] = {};
+	Int_t PIDD1[5000] = {};
+
+
 	vector<float> *weightLHE_gen = 0;
 
 	//These are I believe gen level
@@ -50,9 +60,18 @@ class MC_18{
 	Float_t PhiD2_gen[5000] = {};
 	Int_t PIDD2_gen[5000] = {};
 	Int_t PIDD1_gen[5000] = {};
+	Int_t PID_gen[5000] = {};
 
 
 	Int_t nentries = 0;
+
+	//Cut information
+	Int_t masslowlimit = 60;
+	Int_t masshighlimit = 120;
+	Double_t ptlowlimit = 20;
+	Double_t etalimit = 2.4;
+	Double_t vtxproblowlimit = 0.001;
+
 
 	
 
@@ -70,11 +89,15 @@ MC_18::~MC_18(){
 	delete dir1;
 }
 
-void MC_18::SetupRootfile(){
-	f1 = new TFile(MC_File_Path,"READ");
+void MC_18::SetupRootfile(Int_t x){
+	if(x == 1)f1 = new TFile(MC_File_Path,"READ");
+	if (x == 2)f1 = new TFile(MC_W_File_Path,"READ");
+	
 	if (f1->IsOpen()!=1){
-		cout << "ROOTfile " << MC_File_Path << " Cannot be opened! " << endl; 
+		if (x == 1)cout << "ROOTfile " << MC_File_Path << " Cannot be opened! " << endl; 
+		if (x == 2) cout << "ROOTfile " << MC_W_File_Path << " Cannot be opened! " << endl; 
 	}
+		
 	dir1 = (TDirectoryFile*)f1->Get("dimucontana_mc;1");
 	if (!dir1){
 		cout << "TDirectory dimucontana_mc cannot be opened! " << endl; 
@@ -114,6 +137,10 @@ void MC_18::SetupBranches(){
 	t1->SetBranchStatus("PhiD2_gen",1);
 	t1->SetBranchStatus("PIDD2_gen",1);
 	t1->SetBranchStatus("PIDD1_gen",1);
+	t1->SetBranchStatus("PIDD2",1);
+	t1->SetBranchStatus("PIDD1",1);
+	t1->SetBranchStatus("PID_gen",1);
+	
 	//Link to variables
 	t1->SetBranchAddress("candSize",&candSize);
 	t1->SetBranchAddress("centrality",&centrality);
@@ -142,8 +169,11 @@ void MC_18::SetupBranches(){
 	t1->SetBranchAddress("PhiD2_gen",PhiD2_gen);
 	t1->SetBranchAddress("PIDD2_gen",PIDD2_gen);
 	t1->SetBranchAddress("PIDD1_gen",PIDD1_gen);
+	t1->SetBranchAddress("PIDD2",PIDD2);
+	t1->SetBranchAddress("PIDD1",PIDD1);
+	t1->SetBranchAddress("PID_gen",PID_gen);
 }
-bool MC_18::SetupCut(){
+/*bool MC_18::SetupCut(){
 	int isPassed = 0;
 	for (int i = 0; i < candSize; i++){
 		if (pTD1[i] > 20 && TMath::Abs(EtaD1[i]) < 2.4 && pTD2[i] > 20 && TMath::Abs(EtaD2[i]) < 2.4 && VtxProb[i] > 0.001) isPassed++;
@@ -155,7 +185,7 @@ bool MC_18::SetupCut(){
 	else{
 		return true;
 	}
-}
+}*/
 void MC_18::Plot_and_Pull(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* p2){
 	gStyle->SetOptFit(1);
 	hist2->GetXaxis()->SetTitle("Invariant Mass(GeV)");
