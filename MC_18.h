@@ -5,17 +5,21 @@ class MC_18{
 	MC_18();
 	~MC_18();
 	
-	void SetupRootfile(Int_t x);
-	void SetupBranches();
+	void SetupRootfile(Int_t x, Int_t y);
+	void SetupBranches(Int_t x = 0);
 	//bool SetupCut();
 	void Plot_and_Pull(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* p2);
 	void Plot_and_Pull_gen(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* p2);
     void Calc_Z_gen(TH1D* h1);
+	void CentBinSearching(int *arr);
 	
 
-	TString MC_File_Path = "/eos/cms/store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
+	TString MC_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
 	//TString MC_File_Path = "./VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
-	TString MC_W_File_Path = "/eos/cms/store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_WJetsToLNu_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
+	TString MC_W_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_WJetsToLNu_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
+	TString MC_tt_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_TTJets_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
+	TString Data_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_OppositeSignSkim_HLTbit6_gt0Cands_v2.root";
+	TString Data_File_same_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_SameSignSkim_HLTbit6_gt0Cands_v2.root";
 	TFile *f1;
 	TDirectoryFile *dir1;
 	TTree *t1;
@@ -72,6 +76,11 @@ class MC_18{
 	Double_t etalimit = 2.4;
 	Double_t vtxproblowlimit = 0.001;
 
+	//centrality range def
+	Int_t centarraysize = 11;
+	Int_t cenlowlimit[11] = {0,5,10,20,30,0,15,70,0,14,0};
+	Int_t cenhighlimit[11] = {5,10,20,30,100,15,100,90,14,100,100};
+
 
 	
 
@@ -89,26 +98,78 @@ MC_18::~MC_18(){
 	delete dir1;
 }
 
-void MC_18::SetupRootfile(Int_t x){
-	if(x == 1)f1 = new TFile(MC_File_Path,"READ");
-	if (x == 2)f1 = new TFile(MC_W_File_Path,"READ");
+void MC_18::CentBinSearching(int *arr){
+	for (int i = 0; i < centarraysize; i++ ){
+		if (centrality/2 >= cenlowlimit[i] && centrality/2 < cenhighlimit[i]){
+			arr[i] = 1;
+		}
+		else{
+			arr[i] = 0;
+		}
+	}
+}
+
+void MC_18::SetupRootfile(Int_t x, Int_t y){
+	if(x == 1)f1 = TFile::Open(MC_File_Path,"READ");
+	if (x == 2)f1 = TFile::Open(MC_W_File_Path,"READ");
+	if(x == 3)f1 = TFile::Open(MC_tt_File_Path,"READ");
+	if(x == 4)f1 = TFile::Open(Data_File_Path,"READ");
+	if(x == 5)f1 = TFile::Open(Data_File_same_Path,"READ");
 	
 	if (f1->IsOpen()!=1){
 		if (x == 1)cout << "ROOTfile " << MC_File_Path << " Cannot be opened! " << endl; 
 		if (x == 2) cout << "ROOTfile " << MC_W_File_Path << " Cannot be opened! " << endl; 
+		if (x == 3) cout << "ROOTfile " << MC_tt_File_Path << " Cannot be opened! " << endl;
 	}
 		
-	dir1 = (TDirectoryFile*)f1->Get("dimucontana_mc;1");
+	if (y == 1) dir1 = (TDirectoryFile*)f1->Get("dimucontana_mc;1");
+	if (y == 2) dir1 = (TDirectoryFile*)f1->Get("dimucontana_wrongsign_mc;1");
 	if (!dir1){
-		cout << "TDirectory dimucontana_mc cannot be opened! " << endl; 
+		cout << "TDirectory dimucontana cannot be opened! " << endl; 
 	}
-	t1 = (TTree*) dir1->Get("VertexCompositeNtuple;1");
+	if (y == 0) t1 = (TTree*)f1->Get("VertexCompositeNtuple;1");
+	else {t1 = (TTree*) dir1->Get("VertexCompositeNtuple;1");}
 	if (!t1){
 		cout << "TTree VertexCompositeNtuple;1 cannot be opened! " << endl;
 	}
 }
-void MC_18::SetupBranches(){
-	//Enable required branches
+void MC_18::SetupBranches(Int_t x = 0){
+	if (x == 1){
+		t1->SetBranchStatus("pT",1);
+		t1->SetBranchStatus("candSize",1);
+		t1->SetBranchStatus("centrality",1);
+		t1->SetBranchStatus("eta",1);
+		t1->SetBranchStatus("phi",1);
+		t1->SetBranchStatus("mass",1);
+		t1->SetBranchStatus("pTD1",1);
+		t1->SetBranchStatus("EtaD1",1);
+		t1->SetBranchStatus("PhiD1",1);
+		t1->SetBranchStatus("chargeD1",1);
+		t1->SetBranchStatus("pTD2",1);
+		t1->SetBranchStatus("EtaD2",1);
+		t1->SetBranchStatus("PhiD2",1);
+		t1->SetBranchStatus("chargeD2",1);
+		t1->SetBranchStatus("VtxProb",1);
+
+		t1->SetBranchAddress("pT",pT);
+		t1->SetBranchAddress("centrality",&centrality);
+		t1->SetBranchAddress("candSize",&candSize);
+		t1->SetBranchAddress("eta",eta);
+		t1->SetBranchAddress("phi",phi);
+		t1->SetBranchAddress("mass",mass);
+		t1->SetBranchAddress("VtxProb",VtxProb);
+		t1->SetBranchAddress("pTD1",pTD1);
+		t1->SetBranchAddress("EtaD1",EtaD1);
+		t1->SetBranchAddress("PhiD1",PhiD1);
+		t1->SetBranchAddress("chargeD1",chargeD1);
+		t1->SetBranchAddress("pTD2",pTD2);
+		t1->SetBranchAddress("EtaD2",EtaD2);
+		t1->SetBranchAddress("PhiD2",PhiD2);
+		t1->SetBranchAddress("chargeD2",chargeD2);
+	
+	}
+	else{
+			//Enable required branches
 	t1->SetBranchStatus("*",0);
 	t1->SetBranchStatus("candSize",1);
 	t1->SetBranchStatus("centrality",1);
@@ -172,6 +233,9 @@ void MC_18::SetupBranches(){
 	t1->SetBranchAddress("PIDD2",PIDD2);
 	t1->SetBranchAddress("PIDD1",PIDD1);
 	t1->SetBranchAddress("PID_gen",PID_gen);
+
+	}
+
 }
 /*bool MC_18::SetupCut(){
 	int isPassed = 0;
