@@ -1,5 +1,5 @@
 #include "fitting_helper.h"
-void get_fit(int opt = 1){
+void get_fit(int opt = 5){
 	//need 11 objs
 	// opt 1 == raw
 	// opt 2 == y

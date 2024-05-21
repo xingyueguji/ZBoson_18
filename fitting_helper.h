@@ -221,14 +221,14 @@ void fitting_helper::plotting(int opt1, int opt, int cent){
 	}
 	if (opt1 == 5){
 		if (opt == 1)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw_%i.pdf",cent));
-		if (opt == 2)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw_%i.pdf",cent));
-		if (opt == 3)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw+temp_%i.pdf",cent));
 
 	}
 	if (opt1 == 6){
 		if (opt == 1)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw_%i.pdf",cent));
-		if (opt == 2)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw_%i.pdf",cent));
-		if (opt == 3)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw+temp_%i.pdf",cent));
 	}
 
 

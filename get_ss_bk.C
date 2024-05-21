@@ -117,7 +117,7 @@ void get_ss_bk(){
 			double ratio_witheta;
 
 			double content_mc_os_witheta_witheff = mass_aray_witheta_witheff[i]->GetBinContent(j);
-			double content_data_ss_witheta_witheff = same_sign_ratio_witheta_witheff[i]->GetBinContent(j);
+			double content_data_ss_witheta_witheff = mass_array_data_same_sign_witheta_witheff[i]->GetBinContent(j);
 			double content_data_os_witheta_witheff = mass_array_data_witheta_witheff[i]->GetBinContent(j);
 			double ratio_witheta_witheff;
 
@@ -131,7 +131,11 @@ void get_ss_bk(){
 			else ratio_withy_witheff = 0;
 			if (content_data_os_witheta >0 ) ratio_witheta = content_data_ss_witheta / content_data_os_witheta;
 			else ratio_witheta = 0;
-			if (content_data_os_witheta_witheff >0 ) ratio_witheta_witheff = content_data_ss_witheta_witheff / content_data_os_witheta_witheff;
+			if (content_data_os_witheta_witheff >0 ){
+				ratio_witheta_witheff = content_data_ss_witheta_witheff / content_data_os_witheta_witheff;
+				//cout << "We have content here" << endl;
+
+			} 
 			else ratio_witheta_witheff = 0;
 
 			//if (i == 7) cout << "Ratio is " <<  ratio << endl;
