@@ -86,6 +86,29 @@ void get_data(){
 		mass_array_data_same_sign_witheta_witheff[i] = new TH1D(Form("mass_array_data_same_sign_witheta_witheff_%i",i),Form("mass_data_same_sign_%i_%i",data_same_sign->cenlowlimit[i],data_same_sign->cenhighlimit[i]),120,60,120);
 	}
 
+	// Place for the new unbinned dataset:
+	RooRealVar* roomass[11];
+	RooDataSet* roodata[11];
+	RooDataSet* roodata_y[11];
+	RooDataSet* roodata_eff[11];
+	RooDataSet* roodata_y_eff[11];
+	RooDataSet* roodata_eta[11];
+	RooDataSet* roodata_eta_eff[11];
+	RooDataSet* roodata_raw_uniform[11];
+
+	for (int i = 0; i < data->centarraysize; i++){
+		roomass[i] = new RooRealVar("roomass","roomass",60,120);
+		roomass[i]->setBinning(RooBinning(10000,60,120));
+		roodata[i] = new RooDataSet(Form("roodata_%i",i),Form("roodata_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		roodata_y[i] = new RooDataSet(Form("roodata_y_%i",i),Form("roodata_y_%i",i),RooArgSet(*roomass[i]));
+		roodata_eff[i] = new RooDataSet(Form("roodata_eff_%i",i),Form("roodata_eff_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		roodata_y_eff[i] = new RooDataSet(Form("roodata_y_eff_%i",i),Form("roodata_y_eff_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		roodata_eta[i] = new RooDataSet(Form("roodata_eta_%i",i),Form("roodata_eta_%i",i),RooArgSet(*roomass[i]));
+		roodata_eta_eff[i] = new RooDataSet(Form("roodata_eta_eff_%i",i),Form("roodata_eta_eff_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		roodata_raw_uniform[i] = new RooDataSet(Form("roodata_raw_uniform_%i",i),Form("roodata_raw_uniform_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+	}
+
+
 	int nentries = data->t1->GetEntries();
 	cout << "We have " << nentries << " events in total" << endl;
 
@@ -147,17 +170,30 @@ void get_data(){
 							double efficiency = data->getEfficiency(e[k],data->y[j],data->pT[j]);
 							mass_array_data_withy[k]->Fill(data->mass[j]);
 							mass_array_data_withy_witheff[k]->Fill(data->mass[j],1.0/efficiency);
+							roomass[k] ->setVal(data->mass[j]);
+							roodata_y[k]->add(RooArgSet(*roomass[k]));
+							roodata_y_eff[k]->add(RooArgSet(*roomass[k]),1.0/efficiency);
 						}
 						//with eta cut < 1 on both D1 and D2 muons
 						if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1)) {
 							double efficiency = data->getEfficiency(e[k],data->y[j],data->pT[j]);
 							mass_array_data_witheta[k]->Fill(data->mass[j]);
 							mass_array_data_witheta_witheff[k]->Fill(data->mass[j],1.0/efficiency);
+							roomass[k] ->setVal(data->mass[j]);
+							roodata_eta[k]->add(RooArgSet(*roomass[k]));
+							roodata_eta_eff[k]->add(RooArgSet(*roomass[k]),1.0/efficiency);
 						}
 						//without y cut
 						double efficiency = data->getEfficiency(e[k],data->y[j],data->pT[j]);
 						mass_array_data[k]->Fill(data->mass[j]);
 						mass_array_data_with_eff[k]->Fill(data->mass[j],1.0/efficiency);
+
+						//This is the raw one: test validity of unbin fit
+						roomass[k] ->setVal(data->mass[j]);
+						roodata[k]->add(RooArgSet(*roomass[k]));
+						roodata_eff[k]->add(RooArgSet(*roomass[k]),1.0/efficiency);
+						roodata_raw_uniform[k]->add(RooArgSet(*roomass[k]),1);
+
 					}
 				}
 			}
@@ -247,9 +283,17 @@ void get_data(){
 		mass_array_data_with_eff[i]->Write("",2);
 		mass_array_data_witheta[i]->Write("",2);
 		mass_array_data_witheta_witheff[i]->Write("",2);
+
+		roodata[i]->Write("",2);
+		roodata_y[i]->Write("",2);
+		roodata_y_eff[i]->Write("",2);
+		roodata_eta[i]->Write("",2);
+		roodata_eta_eff[i]->Write("",2);
+		roodata_eff[i]->Write("",2);
+		roodata_raw_uniform[i]->Write("",2);
 	}
 
-	TCanvas *c1 = new TCanvas("","",600,600);
+	TCanvas *c1 = new TCanvas("","",1200,600);
 	c1->Divide(2,1);
 	//c1->SetLogy(1);
 	c1->cd(1);

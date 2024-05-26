@@ -3,12 +3,12 @@ class fitting_helper{
 
 	fitting_helper();
 	~fitting_helper();
-	void gethistograms(int opt);
+	void gethistograms(int opt,bool useunbin);
 	void setupfittingfunction(int cent);
-	void fitting(int opt1);
-	void plotting(int opt1, int opt, int cent);
+	RooFitResult* fitting(int opt1,int cent,bool useunbin);
+	void plotting(int opt1, int opt, int cent, bool useunbin);
 	void setupfittingfunctionchi();
-	void plotTGraph(TGraphErrors* x1, TGraphErrors* x2, TGraphErrors *x3, int opt, int opt1);
+	void plotTGraph(TGraphErrors* x1, TGraphErrors* x2, TGraphErrors *x3, int opt, int opt1,bool useunbin);
 
 	TString raw_file = "./rootfile/normalized/rawfile.root";
 	TString ycut_file = "./rootfile/normalized/ycutfile.root";
@@ -16,10 +16,18 @@ class fitting_helper{
 	TString ycut_eff_file = "./rootfile/normalized/ycut_eff_file.root";
 	TString etacut_file = "./rootfile/normalized/etacut_file.root";
 	TString etacut_eff_file = "./rootfile/normalized/etacut_eff_file.root";
+	TString data_file = "./rootfile/data_file.root";
 
 	TH1D* h_normalized_mc[11];
 	TH1D* h_normalized_data[11];
 	TH1D* h_normalized_mc_bk[11];
+
+    RooDataSet* roodata[11];
+	RooDataSet* roodata_y[11];
+	RooDataSet* roodata_y_eff[11];
+	RooDataSet* roodata_eta[11];
+	RooDataSet* roodata_eta_eff[11];
+	RooDataSet* roodata_eff[11];
 
 	TFile* f1;
 	TFile* f2;
@@ -66,6 +74,11 @@ class fitting_helper{
 	RooRealVar *convocenter;
 	RooRealVar *convowidth;
 
+	RooDataSet *unbinned;
+	RooArgSet *useforunbinned;
+
+	RooRealVar *weight;
+
 	double meanshift = 0;
 	double meanshifterror = 0;
 
@@ -74,6 +87,9 @@ class fitting_helper{
 
 	Int_t h_normalized_data_entry[11] = {};
 
+	//new roorealvar area:
+
+	RooRealVar *roomass[11];
 
 
 
@@ -85,32 +101,42 @@ class fitting_helper{
 fitting_helper::fitting_helper(){
 }
 
-void fitting_helper::gethistograms(int opt){
-	if (opt == 1)f1 = new TFile(raw_file, "READ");
-	if (opt == 2)f1 = new TFile(ycut_file, "READ");
-	if (opt == 3)f1 = new TFile(eff_file, "READ");
-	if (opt == 4)f1 = new TFile(ycut_eff_file, "READ");
-	if (opt == 5)f1 = new TFile(etacut_file,"READ");
-	if (opt == 6)f1 = new TFile(etacut_eff_file,"READ");
+void fitting_helper::gethistograms(int opt,bool useunbin){
+
+		if (opt == 1 || opt == 7)f1 = new TFile(raw_file, "READ");
+		if (opt == 2)f1 = new TFile(ycut_file, "READ");
+		if (opt == 3)f1 = new TFile(eff_file, "READ");
+		if (opt == 4)f1 = new TFile(ycut_eff_file, "READ");
+		if (opt == 5)f1 = new TFile(etacut_file,"READ");
+		if (opt == 6)f1 = new TFile(etacut_eff_file,"READ");
+		for (int i=0; i<11; i++){
+			h_normalized_mc[i] = (TH1D*) f1->Get(Form("Normalized_mc_%i",i));
+			h_normalized_data[i] = (TH1D*) f1->Get(Form("Normalized_data_%i",i));
+			h_normalized_mc_bk[i] = (TH1D*) f1->Get(Form("Normalized_mc_bk_%i",i));
+			h_normalized_data_entry[i] = h_normalized_data[i]->GetEntries();
+		}
+
+		f2 = new TFile(data_file,"READ");
+		for (int i=0; i<11; i++){
+			if (opt == 1) roodata[i] = (RooDataSet*)f2->Get(Form("roodata_%i",i));
+			if (opt == 2) roodata[i] = (RooDataSet*)f2->Get(Form("roodata_y_%i",i));
+			if (opt == 4) roodata[i] = (RooDataSet*)f2->Get(Form("roodata_y_eff_%i",i));
+			if (opt == 3) roodata[i] = (RooDataSet*)f2->Get(Form("roodata_eff_%i",i));
+			if (opt == 6) roodata[i] = (RooDataSet*)f2->Get(Form("roodata_eta_eff_%i",i));
+			if (opt == 5) roodata[i] = (RooDataSet*)f2->Get(Form("roodata_eta_%i",i));
+			if (opt == 7) roodata[i] = (RooDataSet*)f2->Get(Form("roodata_raw_uniform_%i",i));
+		}
 	//f2 = new TFile(mc_file_path,"READ");
-
-	for (int i=0; i<11; i++){
-		h_normalized_mc[i] = (TH1D*) f1->Get(Form("Normalized_mc_%i",i));
-		h_normalized_data[i] = (TH1D*) f1->Get(Form("Normalized_data_%i",i));
-		h_normalized_mc_bk[i] = (TH1D*) f1->Get(Form("Normalized_mc_bk_%i",i));
-		h_normalized_data_entry[i] = h_normalized_data[i]->GetEntries();
-	}
-
-	
 }
 
 void fitting_helper::setupfittingfunction(int cent){
-	convocenter = new RooRealVar("convocenter", "", 91);
-	convowidth = new RooRealVar("convowidth","convowidth",500);
+	//convocenter = new RooRealVar("convocenter", "", 91);
+	//convowidth = new RooRealVar("convowidth","convowidth",500);
 
-	x = new RooRealVar("x", "x",60., 120. );
+	x = new RooRealVar("roomass","roomass",60,120);
 	x->setBinning(RooBinning(10000,60,120),"cache");
-	conwindow = new RooRealVar("conwindow","conwindow",-10,125);
+	//x->setBins(10000,"fft");
+	//conwindow = new RooRealVar("conwindow","conwindow",-10,125);
 	bwmean = new RooRealVar("bwmean", "bwmean",bwmeanip,80,100);
 	//RooRealVar m0("m0", "m0",m0ip,80,100);
 	width = new RooRealVar("width", "width",widthip,0,10 );
@@ -130,42 +156,81 @@ void fitting_helper::setupfittingfunction(int cent){
 	histpdf1 = new RooHistPdf("histpdf1", "histpdf1", *x, *background, 0);
 	sig1frac = new RooRealVar("sig1frac", "fraction of component 1 in signal", sig1fracip,0,1);
 	temp_sig = new RooAddPdf("temp_sig","temp_sig",RooArgList(*newconvpdf,*histpdf1),*sig1frac);
-	data = new RooDataHist("data","data",*x,h_normalized_data[cent]);
-	mc = new RooDataHist("mc","mc",*x,h_normalized_mc[cent]);
+		data = new RooDataHist("data","data",*x,h_normalized_data[cent]);
+		mc = new RooDataHist("mc","mc",*x,h_normalized_mc[cent]);
 
+
+	/*for (int i = 0; i < 11; i++){
+		roomass[i] = new RooRealVar(Form("roomass_%i",i),Form("roomass_%i",i),60,120);
+		roomass[i]->setBinning(RooBinning(10000,60,120),"cache");
+
+
+	}*/
 	//pdf->setConvolutionWindow(*convocenter, *convowidth, 1);
 	//RooFit::Minimizer("Minuit","migrad")
 }
 
-void fitting_helper::fitting(int opt1){
+RooFitResult* fitting_helper::fitting(int opt1,int cent, bool useunbin){
 	//pdf->fitTo(mc,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::MaxCalls(5000));
 	//if (opt1 == 1 )pdf->fitTo(*data,RooFit::Save(true),RooFit::SumW2Error(true));
-	if (opt1 == 1 )newconvpdf->fitTo(*data,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::Minimizer("Minuit2","migrad"));
-	//purepdf->fitTo(mc,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::MaxCalls(5000));
-	if (opt1 == 2 )purepdf->fitTo(*data,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::Minimizer("Minuit2","migrad"));
-	//temp_sig->fitTo(mc,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::MaxCalls(5000));
-	if (opt1 == 3)temp_sig->fitTo(*data,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::Minimizer("Minuit2","migrad"));
+	RooFitResult* fitresult;
+	if (useunbin){
+		if (opt1 == 1 )fitresult = newconvpdf->fitTo(*roodata[cent],RooFit::Save(true),RooFit::AsymptoticError(true),RooFit::Minimizer("Minuit2","migrad"));
+		if (opt1 == 2 )fitresult = purepdf->fitTo(*roodata[cent],RooFit::Save(true),RooFit::AsymptoticError(true),RooFit::Minimizer("Minuit2","migrad"));
+		if (opt1 == 3)fitresult = temp_sig->fitTo(*roodata[cent],RooFit::Save(true),RooFit::AsymptoticError(true),RooFit::Minimizer("Minuit2","migrad"));
+	}
+
+	if (!useunbin){
+		if (opt1 == 1 )fitresult = newconvpdf->fitTo(*data,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::Minimizer("Minuit2","migrad"));
+		if (opt1 == 2 )fitresult = purepdf->fitTo(*data,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::Minimizer("Minuit2","migrad"));
+		if (opt1 == 3)fitresult = temp_sig->fitTo(*data,RooFit::Save(true),RooFit::SumW2Error(true),RooFit::Minimizer("Minuit2","migrad"));
+	}
+	
+
+	return fitresult;
 }
-void fitting_helper::plotting(int opt1, int opt, int cent){
+void fitting_helper::plotting(int opt1, int opt, int cent, bool useunbin){
 	frame = x->frame();
 	framecheck = x->frame();
-	if (opt == 1) {
+	if (useunbin){
+		if (opt == 1) {
+		roodata[cent]->plotOn(frame,RooFit::Binning(120),RooFit::MarkerColor(kBlack),RooFit::MarkerSize(0.1));
+		newconvpdf->plotOn(frame,RooFit::LineWidth(1));
+		newconvpdf->paramOn(frame,RooFit::Format("NEU",RooFit::AutoPrecision(3)),RooFit::Layout(0.6,1,0.9),RooFit::ShowConstants(kTRUE));
+		}
+		if (opt == 2) {
+		roodata[cent]->plotOn(frame,RooFit::Binning(120),RooFit::MarkerColor(kBlack),RooFit::MarkerSize(0.1));
+		purepdf->plotOn(frame,RooFit::LineWidth(1));
+		purepdf->paramOn(frame,RooFit::Format("NEU",RooFit::AutoPrecision(3)),RooFit::Layout(0.6,1,0.9),RooFit::ShowConstants(kTRUE));
+		purepdf->plotOn(framecheck,RooFit::Components(*exp), RooFit::LineStyle(kDashed),RooFit::LineColor(kRed));
+		}
+		if (opt == 3) {
+		roodata[cent]->plotOn(frame,RooFit::Binning(120),RooFit::MarkerColor(kBlack),RooFit::MarkerSize(0.1));
+		temp_sig->plotOn(frame,RooFit::LineWidth(1));
+		temp_sig->paramOn(frame,RooFit::Format("NEU",RooFit::AutoPrecision(3)),RooFit::Layout(0.6,1,0.9),RooFit::ShowConstants(kTRUE));
+		temp_sig->plotOn(framecheck,RooFit::Components(*histpdf1), RooFit::LineStyle(kDashed),RooFit::LineColor(kRed));
+		}
+	}
+	if (!useunbin){
+		if (opt == 1) {
 		data->plotOn(frame,RooFit::Binning(120),RooFit::MarkerColor(kBlack),RooFit::MarkerSize(0.1));
 		newconvpdf->plotOn(frame,RooFit::LineWidth(1));
 		newconvpdf->paramOn(frame,RooFit::Format("NEU",RooFit::AutoPrecision(3)),RooFit::Layout(0.6,1,0.9),RooFit::ShowConstants(kTRUE));
-	}
-	if (opt == 2) {
+		}
+		if (opt == 2) {
 		data->plotOn(frame,RooFit::Binning(120),RooFit::MarkerColor(kBlack),RooFit::MarkerSize(0.1));
 		purepdf->plotOn(frame,RooFit::LineWidth(1));
 		purepdf->paramOn(frame,RooFit::Format("NEU",RooFit::AutoPrecision(3)),RooFit::Layout(0.6,1,0.9),RooFit::ShowConstants(kTRUE));
 		purepdf->plotOn(framecheck,RooFit::Components(*exp), RooFit::LineStyle(kDashed),RooFit::LineColor(kRed));
-	}
-	if (opt == 3) {
+		}
+		if (opt == 3) {
 		data->plotOn(frame,RooFit::Binning(120),RooFit::MarkerColor(kBlack),RooFit::MarkerSize(0.1));
 		temp_sig->plotOn(frame,RooFit::LineWidth(1));
 		temp_sig->paramOn(frame,RooFit::Format("NEU",RooFit::AutoPrecision(3)),RooFit::Layout(0.6,1,0.9),RooFit::ShowConstants(kTRUE));
 		temp_sig->plotOn(framecheck,RooFit::Components(*histpdf1), RooFit::LineStyle(kDashed),RooFit::LineColor(kRed));
+		}
 	}
+	
 	residuals = frame->residHist("","",true,false); //true = pull, false = center of the bin
 	pullFrame = x->frame();
 	pullFrame->addPlotable(residuals, "P");
@@ -199,39 +264,84 @@ void fitting_helper::plotting(int opt1, int opt, int cent){
 	pullFrame->Draw();
 	c1->cd(3);
 	framecheck->Draw();
+	if (useunbin){
+
 	if (opt1 == 1){
-		if (opt == 1) c1->SaveAs(Form("./fitresultplot/raw/cb+bw_%i.pdf",cent));
-		if (opt == 2) c1->SaveAs(Form("./fitresultplot/raw/cb+bw+exp_%i.pdf",cent));
-		if (opt == 3) c1->SaveAs(Form("./fitresultplot/raw/cb+bw+temp_%i.pdf",cent));
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/unbin/raw/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/unbin/raw/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/unbin/raw/cb+bw+temp_%i.pdf",cent));
 	}
 	if (opt1 == 2){
-		if (opt == 1) c1->SaveAs(Form("./fitresultplot/ycut/cb+bw_%i.pdf",cent));
-		if (opt == 2) c1->SaveAs(Form("./fitresultplot/ycut/cb+bw+exp_%i.pdf",cent));
-		if (opt == 3) c1->SaveAs(Form("./fitresultplot/ycut/cb+bw+temp_%i.pdf",cent));
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/unbin/ycut/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/unbin/ycut/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/unbin/ycut/cb+bw+temp_%i.pdf",cent));
 	}
 	if (opt1 == 3){
-		if (opt == 1) c1->SaveAs(Form("./fitresultplot/eff/cb+bw_%i.pdf",cent));
-		if (opt == 2) c1->SaveAs(Form("./fitresultplot/eff/cb+bw+exp_%i.pdf",cent));
-		if (opt == 3) c1->SaveAs(Form("./fitresultplot/eff/cb+bw+temp_%i.pdf",cent));
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/unbin/eff/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/unbin/eff/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/unbin/eff/cb+bw+temp_%i.pdf",cent));
 	}
 	if (opt1 == 4){
-		if (opt == 1) c1->SaveAs(Form("./fitresultplot/ycut_eff/cb+bw_%i.pdf",cent));
-		if (opt == 2) c1->SaveAs(Form("./fitresultplot/ycut_eff/cb+bw+exp_%i.pdf",cent));
-		if (opt == 3) c1->SaveAs(Form("./fitresultplot/ycut_eff/cb+bw+temp_%i.pdf",cent));
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/unbin/ycut_eff/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/unbin/ycut_eff/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/unbin/ycut_eff/cb+bw+temp_%i.pdf",cent));
 	}
 	if (opt1 == 5){
-		if (opt == 1)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw_%i.pdf",cent));
-		if (opt == 2)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw+exp_%i.pdf",cent));
-		if (opt == 3)c1->SaveAs(Form("./fitresultplot/etacut/cb+bw+temp_%i.pdf",cent));
+		if (opt == 1)c1->SaveAs(Form("./fitresultplot/unbin/etacut/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/unbin/etacut/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/unbin/etacut/cb+bw+temp_%i.pdf",cent));
 
 	}
 	if (opt1 == 6){
-		if (opt == 1)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw_%i.pdf",cent));
-		if (opt == 2)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw+exp_%i.pdf",cent));
-		if (opt == 3)c1->SaveAs(Form("./fitresultplot/etacut_eff/cb+bw+temp_%i.pdf",cent));
+		if (opt == 1)c1->SaveAs(Form("./fitresultplot/unbin/etacut_eff/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/unbin/etacut_eff/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/unbin/etacut_eff/cb+bw+temp_%i.pdf",cent));
+	}
+	if (opt1 == 7){
+		if (opt == 1)c1->SaveAs(Form("./fitresultplot/unbin/raw_uniform/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/unbin/raw_uniform/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/unbin/raw_uniform/cb+bw+temp_%i.pdf",cent));
+	}
 	}
 
+	if (!useunbin){
+		if (opt1 == 1){
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/binned/raw/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/binned/raw/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/binned/raw/cb+bw+temp_%i.pdf",cent));
+	}
+	if (opt1 == 2){
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/binned/ycut/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/binned/ycut/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/binned/ycut/cb+bw+temp_%i.pdf",cent));
+	}
+	if (opt1 == 3){
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/binned/eff/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/binned/eff/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/binned/eff/cb+bw+temp_%i.pdf",cent));
+	}
+	if (opt1 == 4){
+		if (opt == 1) c1->SaveAs(Form("./fitresultplot/binned/ycut_eff/cb+bw_%i.pdf",cent));
+		if (opt == 2) c1->SaveAs(Form("./fitresultplot/binned/ycut_eff/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3) c1->SaveAs(Form("./fitresultplot/binned/ycut_eff/cb+bw+temp_%i.pdf",cent));
+	}
+	if (opt1 == 5){
+		if (opt == 1)c1->SaveAs(Form("./fitresultplot/binned/etacut/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/binned/etacut/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/binned/etacut/cb+bw+temp_%i.pdf",cent));
 
+	}
+	if (opt1 == 6){
+		if (opt == 1)c1->SaveAs(Form("./fitresultplot/binned/etacut_eff/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/binned/etacut_eff/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/binned/etacut_eff/cb+bw+temp_%i.pdf",cent));
+	}
+	if (opt1 == 7){
+		if (opt == 1)c1->SaveAs(Form("./fitresultplot/binned/raw_uniform/cb+bw_%i.pdf",cent));
+		if (opt == 2)c1->SaveAs(Form("./fitresultplot/binned/raw_uniform/cb+bw+exp_%i.pdf",cent));
+		if (opt == 3)c1->SaveAs(Form("./fitresultplot/binned/raw_uniform/cb+bw+temp_%i.pdf",cent));
+	}
+	}
 
 
 }
@@ -240,7 +350,7 @@ void fitting_helper::setupfittingfunctionchi(){
 	meanshift = 2;
 }
 
-void fitting_helper::plotTGraph(TGraphErrors* x1, TGraphErrors* x2, TGraphErrors *x3, int opt, int opt1){
+void fitting_helper::plotTGraph(TGraphErrors* x1, TGraphErrors* x2, TGraphErrors *x3, int opt, int opt1,bool useunbin){
 	gStyle->SetEndErrorSize(6);
 	gStyle->SetPadTopMargin(0.05);
     gStyle->SetPadBottomMargin(0.11);
@@ -271,7 +381,7 @@ void fitting_helper::plotTGraph(TGraphErrors* x1, TGraphErrors* x2, TGraphErrors
 	x1->GetYaxis()->SetTitleOffset(1.9);
 	
 	if (opt == 1) x1->GetYaxis()->SetRangeUser(-0.6,0);
-	if (opt == 2) x1->GetYaxis()->SetRangeUser(-0.2,1.4);
+	if (opt == 2) x1->GetYaxis()->SetRangeUser(-1,1.4);
 
 	x1->SetLineWidth(2);
 	x2->SetLineWidth(2);
@@ -300,8 +410,8 @@ void fitting_helper::plotTGraph(TGraphErrors* x1, TGraphErrors* x2, TGraphErrors
 	f2->SetLineColor(4);
 	f3->SetLineColor(8);
 
-	TLegend *legend = new TLegend(0.6, 0.6, 0.8, 0.9);
-	legend->SetTextFont(42);
+	TLegend *legend = new TLegend(0.6, 0.7, 0.8, 0.95);
+	legend->SetTextFont(40);
 	legend->SetBorderSize(0);
     legend->AddEntry(x1, "cb+bw", "lep"); 
 	legend->AddEntry(x2, "cb+bw+exp", "lep"); 
@@ -338,22 +448,52 @@ void fitting_helper::plotTGraph(TGraphErrors* x1, TGraphErrors* x2, TGraphErrors
 	legend->Draw();
 	pt->Draw();
 
-	if (opt == 1 && opt1 == 1)	c_2->SaveAs("./dM_dSig/raw/dM.pdf");
-	if (opt == 2 && opt1 == 1) 	c_2->SaveAs("./dM_dSig/raw/dSig.pdf");
+	if (useunbin){
+	if (opt == 1 && opt1 == 1)	c_2->SaveAs("./dM_dSig/unbin/raw/dM.pdf");
+	if (opt == 2 && opt1 == 1) 	c_2->SaveAs("./dM_dSig/unbin/raw/dSig.pdf");
 
-	if (opt == 1 && opt1 == 2)	c_2->SaveAs("./dM_dSig/ycut/dM.pdf");
-	if (opt == 2 && opt1 == 2) 	c_2->SaveAs("./dM_dSig/ycut/dSig.pdf");
+	if (opt == 1 && opt1 == 2)	c_2->SaveAs("./dM_dSig/unbin/ycut/dM.pdf");
+	if (opt == 2 && opt1 == 2) 	c_2->SaveAs("./dM_dSig/unbin/ycut/dSig.pdf");
 
-	if (opt == 1 && opt1 == 3)	c_2->SaveAs("./dM_dSig/eff/dM.pdf");
-	if (opt == 2 && opt1 == 3) 	c_2->SaveAs("./dM_dSig/eff/dSig.pdf");
+	if (opt == 1 && opt1 == 3)	c_2->SaveAs("./dM_dSig/unbin/eff/dM.pdf");
+	if (opt == 2 && opt1 == 3) 	c_2->SaveAs("./dM_dSig/unbin/eff/dSig.pdf");
 
-	if (opt == 1 && opt1 == 4)	c_2->SaveAs("./dM_dSig/ycut_eff/dM.pdf");
-	if (opt == 2 && opt1 == 4) 	c_2->SaveAs("./dM_dSig/ycut_eff/dSig.pdf");
+	if (opt == 1 && opt1 == 4)	c_2->SaveAs("./dM_dSig/unbin/ycut_eff/dM.pdf");
+	if (opt == 2 && opt1 == 4) 	c_2->SaveAs("./dM_dSig/unbin/ycut_eff/dSig.pdf");
 
-	if (opt == 1 && opt1 == 5)	c_2->SaveAs("./dM_dSig/etacut/dM.pdf");
-	if (opt == 2 && opt1 == 5) 	c_2->SaveAs("./dM_dSig/etacut/dSig.pdf");
+	if (opt == 1 && opt1 == 5)	c_2->SaveAs("./dM_dSig/unbin/etacut/dM.pdf");
+	if (opt == 2 && opt1 == 5) 	c_2->SaveAs("./dM_dSig/unbin/etacut/dSig.pdf");
 
-	if (opt == 1 && opt1 == 6)	c_2->SaveAs("./dM_dSig/etacut_eff/dM.pdf");
-	if (opt == 2 && opt1 == 6) 	c_2->SaveAs("./dM_dSig/etacut_eff/dSig.pdf");
+	if (opt == 1 && opt1 == 6)	c_2->SaveAs("./dM_dSig/unbin/etacut_eff/dM.pdf");
+	if (opt == 2 && opt1 == 6) 	c_2->SaveAs("./dM_dSig/unbin/etacut_eff/dSig.pdf");
+
+	if (opt == 1 && opt1 == 7)	c_2->SaveAs("./dM_dSig/unbin/raw_uniform/dM.pdf");
+	if (opt == 2 && opt1 == 7) 	c_2->SaveAs("./dM_dSig/unbin/raw_uniform/dSig.pdf");
+	}
+
+	if (!useunbin){
+	if (opt == 1 && opt1 == 1)	c_2->SaveAs("./dM_dSig/binned/raw/dM.pdf");
+	if (opt == 2 && opt1 == 1) 	c_2->SaveAs("./dM_dSig/binned/raw/dSig.pdf");
+
+	if (opt == 1 && opt1 == 2)	c_2->SaveAs("./dM_dSig/binned/ycut/dM.pdf");
+	if (opt == 2 && opt1 == 2) 	c_2->SaveAs("./dM_dSig/binned/ycut/dSig.pdf");
+
+	if (opt == 1 && opt1 == 3)	c_2->SaveAs("./dM_dSig/binned/eff/dM.pdf");
+	if (opt == 2 && opt1 == 3) 	c_2->SaveAs("./dM_dSig/binned/eff/dSig.pdf");
+
+	if (opt == 1 && opt1 == 4)	c_2->SaveAs("./dM_dSig/binned/ycut_eff/dM.pdf");
+	if (opt == 2 && opt1 == 4) 	c_2->SaveAs("./dM_dSig/binned/ycut_eff/dSig.pdf");
+
+	if (opt == 1 && opt1 == 5)	c_2->SaveAs("./dM_dSig/binned/etacut/dM.pdf");
+	if (opt == 2 && opt1 == 5) 	c_2->SaveAs("./dM_dSig/binned/etacut/dSig.pdf");
+
+	if (opt == 1 && opt1 == 6)	c_2->SaveAs("./dM_dSig/binned/etacut_eff/dM.pdf");
+	if (opt == 2 && opt1 == 6) 	c_2->SaveAs("./dM_dSig/binned/etacut_eff/dSig.pdf");
+
+	if (opt == 1 && opt1 == 7)	c_2->SaveAs("./dM_dSig/binned/raw_uniform/dM.pdf");
+	if (opt == 2 && opt1 == 7) 	c_2->SaveAs("./dM_dSig/binned/raw_uniform/dSig.pdf");	
+	}
+
+
 
 }

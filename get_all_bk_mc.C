@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc(int opt = 3){
+void get_all_bk_mc(int opt = 1){
 	TH1::SetDefaultSumw2();
 	//opt == 1 means signal MC;
 	//opt == 2 means W;
@@ -226,7 +226,7 @@ void get_all_bk_mc(int opt = 3){
 	}
 
 	if (opt == 1){
-		TCanvas *c1 = new TCanvas("","",600,600);
+		TCanvas *c1 = new TCanvas("","",1200,600);
 		c1->Divide(2,1);
 		//c1->SetLogy(1);
 		c1->cd(1);
