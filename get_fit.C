@@ -1,5 +1,5 @@
 #include "fitting_helper.h"
-void get_fit(int opt = 7, bool use_unbin = 1){
+void get_fit(int opt = 6, bool use_unbin = 1, bool use_w2_unbin = 1){
 	//need 11 objs
 	// opt 1 == raw
 	// opt 2 == y
@@ -58,18 +58,18 @@ void get_fit(int opt = 7, bool use_unbin = 1){
 		obj2[i]->gethistograms(opt,use_unbin);
 
 
-		obj[i]->setupfittingfunction(i);
-		obj1[i]->setupfittingfunction(i);
-		obj2[i]->setupfittingfunction(i);
+		obj[i]->setupfittingfunction(i,opt,use_unbin);
+		obj1[i]->setupfittingfunction(i,opt,use_unbin);
+		obj2[i]->setupfittingfunction(i,opt,use_unbin);
 
-		obj[i]->fitting(1,i,use_unbin);
-		obj1[i]->fitting(2,i,use_unbin);
-		obj2[i]->fitting(3,i,use_unbin);
+		obj[i]->fitting(1,i,use_unbin,use_w2_unbin);
+		obj1[i]->fitting(2,i,use_unbin,use_w2_unbin);
+		obj2[i]->fitting(3,i,use_unbin,use_w2_unbin);
 
-		obj[i]->plotting(opt,1,i,use_unbin);
-		obj1[i]->plotting(opt,2,i,use_unbin);
-		obj2[i]->plotting(opt,3,i,use_unbin);
-		
+		obj[i]->plotting(opt,1,i,use_unbin,use_w2_unbin);
+		obj1[i]->plotting(opt,2,i,use_unbin,use_w2_unbin);
+		obj2[i]->plotting(opt,3,i,use_unbin,use_w2_unbin);
+
 	}
 	// obj[i] out of scope
 	for (int i = 0; i < 7; i++){
@@ -96,7 +96,7 @@ void get_fit(int opt = 7, bool use_unbin = 1){
 	TGraphErrors* g2sig = new TGraphErrors(7,Xcentdsig1,dMeandsig1,xerrdsig1,yerrdsig1);
 	TGraphErrors* g3sig = new TGraphErrors(7,Xcentdsig2,dMeandsig2,xerrdsig2,yerrdsig2);
 
-	obj[1]->plotTGraph(g1,g2,g3,1,opt,use_unbin);
-	obj[1]->plotTGraph(g1sig,g2sig,g3sig,2,opt,use_unbin);
+	obj[1]->plotTGraph(g1,g2,g3,1,opt,use_unbin,use_w2_unbin);
+	obj[1]->plotTGraph(g1sig,g2sig,g3sig,2,opt,use_unbin,use_w2_unbin);
 
 }

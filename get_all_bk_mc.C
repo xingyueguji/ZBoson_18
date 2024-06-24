@@ -27,6 +27,42 @@ void get_all_bk_mc(int opt = 1){
 	//opt == 2 means W;
 	//opt == 3 means tt;
 	//dont have to worry about starlight
+
+
+
+	// Create matrix of shifted/smeared signal mc mass distribution.	
+	const int nbins_mass_shift = 21;
+	const int nbins_smear = 21;
+	const int nbins_cent = 11;
+	TH1D* modifiedmass[nbins_mass_shift][nbins_smear][nbins_cent];
+
+	for (int i=0; i< nbins_mass_shift; i++){
+		for (int j=0; j < nbins_smear; j++){
+			for (int k=0; k < nbins_cent; k++){
+				modifiedmass[i][j][k] = new TH1D(Form("modifiedmass_%i_%i_%i",i,j,k),"",120,60,120);
+			}
+		}
+	}
+
+	double shift_bin[nbins_mass_shift];
+	double smear_bin[nbins_smear];
+
+	double shiftamount = 1.0 / (nbins_mass_shift - 1); // 21 ticks from -0.5 to 0.5, 20 divisions
+	double smearedamount = 1.0 / (nbins_smear - 1); // 21 ticks from 0 to 1, 20 divisions.
+
+	for (int i=0; i< nbins_mass_shift; i++){
+		shift_bin[i] = -0.5 + i * shiftamount;
+	}
+	for (int j=0; j < nbins_smear; j++){
+		smear_bin[j] = 0 + j * smearedamount;
+	}
+
+	
+
+	TRandom3 randGen;
+
+	double mean = 1;
+
 	gSystem->Load("./libDict.so");
 
 	MC_18 *s = new MC_18();
@@ -75,6 +111,36 @@ void get_all_bk_mc(int opt = 1){
 	TH1D *y_without_cut;
 	TH1D *y_with_cut;
 
+	RooRealVar* roomass[11];
+
+	RooDataSet* rooreco[11];
+	RooDataSet* rooreco_y[11];
+	RooDataSet* rooreco_eff[11];
+	RooDataSet* rooreco_y_eff[11];
+	RooDataSet* rooreco_eta[11];
+	RooDataSet* rooreco_eta_eff[11];
+
+	RooDataSet* roogen[11];
+	RooDataSet* roogen_y[11];
+	RooDataSet* roogen_eta[11];
+
+	for (int i = 0; i < s->centarraysize; i++){
+		roomass[i] = new RooRealVar("roomass","roomass",60,120);
+		roomass[i]->setBinning(RooBinning(10000,60,120));
+
+		rooreco[i] = new RooDataSet(Form("rooreco_%i",i),Form("rooreco_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		rooreco_y[i] = new RooDataSet(Form("rooreco_y_%i",i),Form("rooreco_y_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		rooreco_eff[i] = new RooDataSet(Form("rooreco_eff_%i",i),Form("rooreco_eff_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		rooreco_y_eff[i] = new RooDataSet(Form("rooreco_y_eff_%i",i),Form("rooreco_y_eff_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		rooreco_eta[i] = new RooDataSet(Form("rooreco_eta_%i",i),Form("rooreco_eta_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		rooreco_eta_eff[i] = new RooDataSet(Form("rooreco_eta_eff_%i",i),Form("rooreco_eta_eff_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+
+		roogen[i] = new RooDataSet(Form("roogen_%i",i),Form("roogen_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		roogen_y[i] = new RooDataSet(Form("roogen_y_%i",i),Form("roogen_y_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+		roogen_eta[i] = new RooDataSet(Form("roogen_eta_%i",i),Form("roogen_eta_%i",i),RooArgSet(*roomass[i]),RooFit::WeightVar("eventWeight"));
+
+	}
+
 	y_with_cut = new TH1D("y_with_cut","Z_rapidity_with_cut",100,-3,3);
 	y_without_cut = new TH1D("y_without_cut","Z_rapidity_without_cut",100,-3,3);
 
@@ -106,6 +172,7 @@ void get_all_bk_mc(int opt = 1){
 		//hfCoincFilter2Th4 = 1,
         //primaryVertexFilter = 2,
         //clusterCompatibilityFilter = 3,
+
 		if (!(s->evtSel[1])) continue;
 		if (!(s->evtSel[2])) continue;
 		if (!(s->evtSel[3])) continue;
@@ -133,6 +200,42 @@ void get_all_bk_mc(int opt = 1){
 				break;
 			}
 		}
+		// This is for gen level
+		for (unsigned int j=0;j<s->candSize_gen; j++){
+			if (s->PID_gen[j]!= 23) continue;
+			if (s->DecayID_gen[j]!= 23) continue;
+			if (s->pTD1_gen[j] < s->ptlowlimit) continue;
+			if (s->pTD2_gen[j] < s->ptlowlimit) continue;
+			if(abs(s->EtaD1_gen[j]) > 2.4)continue;
+			if(abs(s->EtaD2_gen[j]) > 2.4)continue;
+			if(abs(s->y_gen[j]) > 2.4) continue;
+				
+			bool isOppositeSign = s->chargeD1_gen[j] != s->chargeD2_gen[j];
+			int centbinpositioncounter[11]= {};
+			s->CentBinSearching(centbinpositioncounter,hiBin);
+
+			if (isOppositeSign){
+				for (int k=0; k<s->centarraysize; k++){
+					if (centbinpositioncounter[k] != 0 ){
+						Float_t massofZ_gen = s->Calc_Z_gen(j);
+						if (massofZ_gen >= 120 || massofZ_gen < 60) continue;
+						if (abs(s->y_gen[j]) < 1){
+							roomass[k] ->setVal(massofZ_gen);
+							roogen_y[k]->add(RooArgSet(*roomass[k]),eventweight);
+						}
+						if ((abs(s->EtaD1_gen[j]) < 1) && (abs(s->EtaD2_gen[j]) < 1)){
+							roomass[k] ->setVal(massofZ_gen);
+							roogen_eta[k]->add(RooArgSet(*roomass[k]),eventweight);
+						}
+						//raw one
+						roomass[k] ->setVal(massofZ_gen);
+						roogen[k]->add(RooArgSet(*roomass[k]),eventweight);
+					}
+				}
+			}
+		}
+
+		// This is for reco level
 		for (unsigned int j=0;j<s->candSize; j++){
 			if(s->mass[j] < s->masslowlimit || s->mass[j] > s->masshighlimit) continue;
 			if(s->pTD1[j] < s->ptlowlimit) continue;
@@ -169,15 +272,36 @@ void get_all_bk_mc(int opt = 1){
 							mass_array[k]->Fill(s->mass[j],eventweight);
 							mass_array_with_eff[k]->Fill(s->mass[j],1.0/efficiency * eventweight);
 
+							roomass[k] ->setVal(s->mass[j]);
+							rooreco[k]->add(RooArgSet(*roomass[k]),eventweight);
+							rooreco_eff[k]->add(RooArgSet(*roomass[k]),1.0/efficiency * eventweight);
+
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j])< 1)){
 								double efficiency = s->getEfficiency(e[k],s->y[j],s->pT[j]);
 								mass_array_witheta[k]->Fill(s->mass[j],eventweight);
 								mass_array_witheta_witheff[k]->Fill(s->mass[j],1.0/efficiency * eventweight);
+
+								roomass[k] ->setVal(s->mass[j]);
+								rooreco_eta[k]->add(RooArgSet(*roomass[k]),eventweight);
+								rooreco_eta_eff[k]->add(RooArgSet(*roomass[k]),1.0/efficiency * eventweight);
+
+								//Here's the shift and smearing part:
+								for (int l = 0; l < nbins_mass_shift; l++){
+									for (int m = 0; m < nbins_smear; m++){
+										double randomsmear = randGen.Gaus(mean, smear_bin[m]);
+										double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
+										modifiedmass[l][m][k]->Fill(updatedmass, 1.0/efficiency * eventweight);
+									}
+								}
 							}
 
 							if (abs(s->y[j]) < 1){
 								mass_array_withy[k]->Fill(s->mass[j],eventweight);
 								mass_array_withy_witheff[k]->Fill(s->mass[j],1.0/efficiency * eventweight);
+
+								roomass[k] ->setVal(s->mass[j]);
+								rooreco_y[k]->add(RooArgSet(*roomass[k]),eventweight);
+								rooreco_y_eff[k]->add(RooArgSet(*roomass[k]),1.0/efficiency * eventweight);
 							}
 						}
 						if (isTau){
@@ -209,6 +333,7 @@ void get_all_bk_mc(int opt = 1){
 
 	histogram_file->cd();
 	event_weight->Write("",2);
+
 	for (int i = 0; i < s->centarraysize; i++){
 		mass_array[i]->Write("",2);
 		mass_array_withy[i]->Write("",2);
@@ -223,7 +348,31 @@ void get_all_bk_mc(int opt = 1){
 		mass_array_tau_withy_witheff[i]->Write("",2);
 		mass_array_tau_witheta[i]->Write("",2);
 		mass_array_tau_witheta_witheff[i]->Write("",2);
+
+		rooreco[i]->Write("",2);;
+		rooreco_y[i]->Write("",2);;
+		rooreco_eff[i]->Write("",2);;
+		rooreco_y_eff[i]->Write("",2);;
+		rooreco_eta[i]->Write("",2);;
+		rooreco_eta_eff[i]->Write("",2);;
+
+		roogen[i]->Write("",2);;
+		roogen_y[i]->Write("",2);;
+		roogen_eta[i]->Write("",2);;
+
 	}
+
+	TFile *modified_histogram_file = new TFile("./rootfile/modified_signal.root","UPDATE");
+	modified_histogram_file->cd();
+
+	for (int i=0; i < nbins_mass_shift; i++){
+		for (int j=0; j<nbins_smear; j++){
+			for (int k=0; k<nbins_cent; k++){
+				modifiedmass[i][j][k]->Write("",2);
+			}
+		}
+	}
+
 
 	if (opt == 1){
 		TCanvas *c1 = new TCanvas("","",1200,600);
@@ -233,10 +382,10 @@ void get_all_bk_mc(int opt = 1){
 		y_without_cut->Draw("hist");
 		c1->cd(2);
 		y_with_cut->Draw("hist");
-
 		c1->SaveAs("./etacheck/mc_signal.pdf");
 	}
 
 	histogram_file->Close();
+	modified_histogram_file->Close();
 	s->f1->Close();
 }

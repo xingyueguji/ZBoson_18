@@ -1,1 +1,5 @@
-
+*.pdf
+*.root
+rootfile/mc_signal.root
+*.txt
+*.png

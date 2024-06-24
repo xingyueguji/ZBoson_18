@@ -37,7 +37,7 @@ class MC_18{
 	//bool SetupCut();
 	void Plot_and_Pull(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* p2);
 	void Plot_and_Pull_gen(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TPad* p2);
-    void Calc_Z_gen(TH1D* h1);
+    Float_t Calc_Z_gen(int indx);
 	void CentBinSearching(int *arr, int hiBin);
 	void getrapidity(int x);
 	int getcentrality(int opt);
@@ -135,6 +135,8 @@ class MC_18{
 	Float_t y_gen[5000] = {};
 	Float_t pT_gen[5000] = {};
 	Short_t RecIdx_gen[5000] = {};
+	Short_t chargeD1_gen[5000] = {};
+	Short_t chargeD2_gen[5000] = {};
 
 
 	Int_t nentries = 0;
@@ -142,7 +144,7 @@ class MC_18{
 	//Cut information
 	Int_t masslowlimit = 60;
 	Int_t masshighlimit = 120;
-	Double_t ptlowlimit = 20;
+	Double_t ptlowlimit = 20; // check 15
 	Double_t etalimit = 2.4;
 	Double_t vtxproblowlimit = 0.001;
 
@@ -363,7 +365,8 @@ void MC_18::SetupBranches(Int_t x){
 	t1->SetBranchStatus("muondZD1",1);
 	t1->SetBranchStatus("muondZD2",1);
 	t1->SetBranchStatus("trigHLT",1);
-	
+	t1->SetBranchStatus("chargeD1_gen",1);
+	t1->SetBranchStatus("chargeD2_gen",1);
 	//Link to variables
 	t1->SetBranchAddress("candSize",&candSize);
 	t1->SetBranchAddress("centrality",&centrality);
@@ -426,6 +429,8 @@ void MC_18::SetupBranches(Int_t x){
 	t1->SetBranchAddress("muondZD1",muondZD1);
 	t1->SetBranchAddress("muondZD2",muondZD2);
 	t1->SetBranchAddress("trigHLT",trigHLT);
+	t1->SetBranchAddress("chargeD1_gen",chargeD1_gen);
+	t1->SetBranchAddress("chargeD2_gen",chargeD2_gen);
 
 	}
 
@@ -541,29 +546,22 @@ void MC_18::Plot_and_Pull_gen(TH1D* hist, TH1D* hist2, TCanvas* c1, TPad* p1, TP
 	hist2->Draw("P HIST E1");
 
 }
-void MC_18::Calc_Z_gen(TH1D* h1){
-	for (int i=0; i<this->candSize_gen; i++){
+Float_t MC_18::Calc_Z_gen(int indx){
 		TLorentzVector muon1;
-		if (abs(PIDD2_gen[i]) != 13 || abs(PIDD1_gen[i]) !=13) continue;
-		Float_t pt_muon_1 = this->pTD1_gen[i];
-		Float_t pt_muon_2 = this->pTD2_gen[i];
-		Float_t eta_muon_1 = this->EtaD1_gen[i];
-		Float_t eta_muon_2 = this->EtaD2_gen[i];
-		if (pt_muon_1 < 20 || pt_muon_2 < 20 || abs(eta_muon_1) > 2.4 || abs(eta_muon_2) > 2.4) continue;
-		if (this->DecayID_gen[i] != 15 && this->DecayID_gen[i] != 23) cout << "??????????????" << this->DecayID_gen[i] << endl;
-		if (this->DecayID_gen[i] != 23) continue;
-
-		Float_t phi_muon_1 = this->PhiD1_gen[i];
-		Float_t phi_muon_2 = this->PhiD2_gen[i];
+		Float_t pt_muon_1 = this->pTD1_gen[indx];
+		Float_t pt_muon_2 = this->pTD2_gen[indx];
+		Float_t eta_muon_1 = this->EtaD1_gen[indx];
+		Float_t eta_muon_2 = this->EtaD2_gen[indx];
+		Float_t phi_muon_1 = this->PhiD1_gen[indx];
+		Float_t phi_muon_2 = this->PhiD2_gen[indx];
 		muon1.SetPtEtaPhiM(pt_muon_1,eta_muon_1,phi_muon_1,0.105);
 		TLorentzVector muon2;
 		muon2.SetPtEtaPhiM(pt_muon_2,eta_muon_2,phi_muon_2,0.105);
 		TLorentzVector ZBoson = muon1 + muon2;
 		Float_t M = ZBoson.M();
-		if (M < 60 || M >= 120) continue;
-		h1->Fill(M,this->weightLHE_gen->at(1080)/10000);
-	}
+		return M;
 }
+
 void MC_18::getrapidity(int x){
 	TLorentzVector v1;
 	v1.SetPtEtaPhiM(pT[x],eta[x],phi[x],mass[x]);
