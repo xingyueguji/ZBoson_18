@@ -24,7 +24,6 @@ class plotting_helper{
 	public:
 
 	plotting_helper();
-	~plotting_helper();
 	void areanormalize(TH1D* h_1);
   void areanormalize_TH1(TH1* h_1);
 	void luminormalize(TH1D* h_1,int opt, double weight);
@@ -99,6 +98,14 @@ void plotting_helper::compositeplot(TH1D* h_1, TH1D* h_2, TH1D* h_3, TH1D* h_4, 
 	h_4->SetOption("HIST");
 	h_5->SetOption("HIST");
 	h_6->SetOption("HIST");
+
+  /*for (int i=1; i<=30; i++){
+    if (h_2->GetBinContent(i) < 0) cout << "Negative in h_2!" << endl;
+    if (h_3->GetBinContent(i) < 0) cout << "Negative in h_3!" << endl;
+    if (h_4->GetBinContent(i) < 0) cout << "Negative in h_4!" << endl;
+    if (h_5->GetBinContent(i) < 0) cout << "Negative in h_5!" << endl;
+    if (h_6->GetBinContent(i) < 0) cout << "Negative in h_6!" << endl;
+  }*/
 
 	TLegend *legend = new TLegend(0.66, 0.7, 0.93, 0.93); 
 	legend->SetTextSize(0.03);

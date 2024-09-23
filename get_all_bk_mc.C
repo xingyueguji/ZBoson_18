@@ -35,11 +35,13 @@ void get_all_bk_mc(int opt = 1){
 	const int nbins_smear = 21;
 	const int nbins_cent = 11;
 	TH1D* modifiedmass[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D* modifiedmass_raw[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	for (int i=0; i< nbins_mass_shift; i++){
 		for (int j=0; j < nbins_smear; j++){
 			for (int k=0; k < nbins_cent; k++){
 				modifiedmass[i][j][k] = new TH1D(Form("modifiedmass_%i_%i_%i",i,j,k),"",120,60,120);
+				modifiedmass_raw[i][j][k] = new TH1D(Form("modifiedmass_raw_%i_%i_%i",i,j,k),"",120,60,120);
 			}
 		}
 	}
@@ -47,8 +49,8 @@ void get_all_bk_mc(int opt = 1){
 	double shift_bin[nbins_mass_shift];
 	double smear_bin[nbins_smear];
 
-	double shiftamount = 1.0 / (nbins_mass_shift - 1); // 21 ticks from -0.5 to 0.5, 20 divisions
-	double smearedamount = 1.0 / (nbins_smear - 1); // 21 ticks from 0 to 1, 20 divisions.
+	double shiftamount = 0.7 / (nbins_mass_shift - 1); // 21 ticks from -0.5 to 0.5, 20 divisions
+	double smearedamount = 0.02 / (nbins_smear - 1); // 21 ticks from 0 to 0.2, 20 divisions.
 
 	for (int i=0; i< nbins_mass_shift; i++){
 		shift_bin[i] = -0.5 + i * shiftamount;
@@ -183,6 +185,7 @@ void get_all_bk_mc(int opt = 1){
 		
 		float eventweight = 1.0;
 		eventweight = vzRW->reweightFactor(s->bestvtxZ) * vzRW->reweightFactorCent(hiBin) * s->Ncoll[hiBin] * (s->weightLHE_gen->at(1080)/10000.0);
+		//cout << eventweight << endl;
 		event_weight->Fill(0.5,eventweight);
 
 		if (!(s->trigHLT[6])) continue;
@@ -275,6 +278,14 @@ void get_all_bk_mc(int opt = 1){
 							roomass[k] ->setVal(s->mass[j]);
 							rooreco[k]->add(RooArgSet(*roomass[k]),eventweight);
 							rooreco_eff[k]->add(RooArgSet(*roomass[k]),1.0/efficiency * eventweight);
+
+							for (int l = 0; l < nbins_mass_shift; l++){
+								for (int m = 0; m < nbins_smear; m++){
+									double randomsmear = randGen.Gaus(mean, smear_bin[m]);
+									double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
+									modifiedmass_raw[l][m][k]->Fill(updatedmass, 1.0/efficiency * eventweight);
+								}
+							}
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j])< 1)){
 								double efficiency = s->getEfficiency(e[k],s->y[j],s->pT[j]);
@@ -369,6 +380,7 @@ void get_all_bk_mc(int opt = 1){
 		for (int j=0; j<nbins_smear; j++){
 			for (int k=0; k<nbins_cent; k++){
 				modifiedmass[i][j][k]->Write("",2);
+				modifiedmass_raw[i][j][k]->Write("",2);
 			}
 		}
 	}

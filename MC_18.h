@@ -212,6 +212,7 @@ void MC_18::SetupRootfile(Int_t x, Int_t y){
 }
 void MC_18::SetupBranches(Int_t x){
 	if (x == 1){
+		t1->SetBranchStatus("*",0);
 		t1->SetBranchStatus("pT",1);
 		t1->SetBranchStatus("candSize",1);
 		t1->SetBranchStatus("centrality",1);

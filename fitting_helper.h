@@ -192,8 +192,8 @@ void fitting_helper::setupfittingfunction(int cent, int type, bool useunbin){
 	}
 	else{*/
 		cbmean = new RooRealVar("mean","mean",cbmeanip);
-		//cbsigma = new RooRealVar("sigma","sigma",sigmaip,0,10);
-		cbsigma = new RooRealVar("sigma","sigma",0.00001);
+		cbsigma = new RooRealVar("sigma","sigma",sigmaip,0,10);
+		//cbsigma = new RooRealVar("sigma","sigma",0.00001);
 		cbalpha = new RooRealVar("alpha","alpha",alphaip,-5,5);
 		cbn = new RooRealVar("n","n", nip ,-5,5);
 		cb = new RooCBShape("cb","cb", *x, *cbmean, *cbsigma, *cbalpha, *cbn);

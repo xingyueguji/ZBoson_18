@@ -114,6 +114,7 @@ void plot_normalize(int opt = 6){
 	TH1D* h_normalized_mc[11];
 	TH1D* h_normalized_mc_bk[11];
 	TH1D* h_total_mc_30bins[11];
+	TH1D* h_total_mc_120bins[11];
 
 	for (int i=0; i<11; i++){
 		ovo->luminormalize(mass_array_W[i],2,w_norm);
@@ -135,9 +136,21 @@ void plot_normalize(int opt = 6){
 		h_normalized_mc_bk[i]->Add(mass_array_tau[i],1);
 		h_normalized_mc_bk[i]->Add(mass_array_samesign[i],1);
 
+		h_total_mc_120bins[i] = (TH1D*) mass_array_W[i]->Clone();
+		h_total_mc_120bins[i]->Add(mass_array_tt[i]);
+		h_total_mc_120bins[i]->Add(mass_array_tau[i]);
+		h_total_mc_120bins[i]->Add(mass_array_signal[i]);
+		h_total_mc_120bins[i]->Add(mass_array_samesign[i]);
+
+
+
+
 		ovo->areanormalize(h_normalized_data[i]);
 		ovo->areanormalize(h_normalized_mc[i]);
-		ovo->areanormalize(h_normalized_mc_bk[i]);
+		//ovo->areanormalize(h_normalized_mc_bk[i]);
+
+		double normalization_factor_mc_120bins = h_total_mc_120bins[i]->Integral("width");
+		h_normalized_mc_bk[i]->Scale(1/normalization_factor_mc_120bins);
 
 		mass_array_W[i]->Rebin(4);
 		mass_array_tt[i]->Rebin(4);
