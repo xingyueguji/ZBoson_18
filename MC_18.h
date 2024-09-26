@@ -25,7 +25,6 @@
 
 typedef std::vector<std::vector<UChar_t>> UCharVecVec;
 
-
 class MC_18{
 	public:
 

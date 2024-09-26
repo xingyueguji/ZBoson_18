@@ -23,6 +23,7 @@
 
 void get_data(){
 	TH1::SetDefaultSumw2();
+	gSystem->Load("./libDict.so");
 
 	MC_18 *data = new MC_18();
 	MC_18 *data_same_sign = new MC_18();
@@ -60,6 +61,8 @@ void get_data(){
 
 	TH1D *y_without_cut;
 	TH1D *y_with_cut;
+
+	TH1D *h_cent = new TH1D("h_cent","h_cent",100,0,200);
 
 	y_with_cut = new TH1D("y_with_cut","Z_rapidity_with_cut",100,-3,3);
 	y_without_cut = new TH1D("y_without_cut","Z_rapidity_without_cut",100,-3,3);
@@ -125,7 +128,7 @@ void get_data(){
 		if (abs(data->bestvtxZ) > 15) continue;
 
 		int hiBin = 0;
-		hiBin = data->getcentrality(3); // FIXME: doZDC? hiBinVar?
+		hiBin = data->getcentrality(0); // FIXME: doZDC? hiBinVar?
 
 		if (!(data->trigHLT[6])) continue;
 
@@ -153,6 +156,8 @@ void get_data(){
 			float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( data->PhiD1[j] - data->PhiD2[j] )))/TMath::Pi();
 			bool passesAco[3] = {1,1,1};
 			if (data->pT[j] < 1.25 && acoplanarity < 0.001) passesAco[0] = false;
+
+			h_cent->Fill(hiBin);
 
 			//This is the place for eta cut check:
 
@@ -301,7 +306,15 @@ void get_data(){
 	c1->cd(2);
 	y_with_cut->Draw("hist");
 
+	TCanvas *c2 = new TCanvas("","",1200,600);
+
+	c2->cd();
+	h_cent->Draw();
+
+	
+
 	c1->SaveAs("./etacheck/data.pdf");
+	c2->SaveAs("./etacheck/cent.pdf");
 
 
 	histogram_file->Close();
