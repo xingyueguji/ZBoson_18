@@ -30,11 +30,13 @@ void get_all_bk_mc(int opt = 1)
 	// dont have to worry about starlight
 
 	// Create matrix of shifted/smeared signal mc mass distribution.
-	const int nbins_mass_shift = 21;
-	const int nbins_smear = 21;
+	const int nbins_mass_shift = 26;
+	const int nbins_smear = 26;
 	const int nbins_cent = 11;
 	TH1D *modifiedmass[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *modifiedmass_raw[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *modifiedmass_raw_without_eff[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *modifiedmass_eta_without_eff[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	for (int i = 0; i < nbins_mass_shift; i++)
 	{
@@ -44,6 +46,8 @@ void get_all_bk_mc(int opt = 1)
 			{
 				modifiedmass[i][j][k] = new TH1D(Form("modifiedmass_%i_%i_%i", i, j, k), "", 120, 60, 120);
 				modifiedmass_raw[i][j][k] = new TH1D(Form("modifiedmass_raw_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				modifiedmass_raw_without_eff[i][j][k] = new TH1D(Form("modifiedmass_raw_without_eff_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				modifiedmass_eta_without_eff[i][j][k] = new TH1D(Form("modifiedmass_eta_without_eff_%i_%i_%i", i, j, k), "", 120, 60, 120);
 			}
 		}
 	}
@@ -52,7 +56,7 @@ void get_all_bk_mc(int opt = 1)
 	double smear_bin[nbins_smear];
 
 	double shiftamount = 0.7 / (nbins_mass_shift - 1); // 21 ticks from -0.5 to 0.5, 20 divisions
-	double smearedamount = 0.02 / (nbins_smear - 1);   // 21 ticks from 0 to 0.2, 20 divisions.
+	double smearedamount = 0.015 / (nbins_smear - 1);  // 21 ticks from 0 to 0.2, 20 divisions.
 
 	for (int i = 0; i < nbins_mass_shift; i++)
 	{
@@ -172,8 +176,8 @@ void get_all_bk_mc(int opt = 1)
 
 	for (int i = 0; i < s->t1->GetEntries(); i++)
 	{
-		if (i % 100000 == 0)
-			cout << "Event " << i << endl;
+		double percentage = 100.0 * i / s->t1->GetEntries();
+		std::cout << "Progress: " << percentage << "% completed\r" << std::flush;
 
 		// W part
 		s->t1->GetEntry(i);
@@ -331,9 +335,13 @@ void get_all_bk_mc(int opt = 1)
 							{
 								for (int m = 0; m < nbins_smear; m++)
 								{
-									double randomsmear = randGen.Gaus(mean, smear_bin[m]);
-									double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
-									modifiedmass_raw[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
+									for (int nsamples = 0; nsamples < 100; ++nsamples)
+									{
+										double randomsmear = randGen.Gaus(mean, smear_bin[m]);
+										double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
+										// modifiedmass_raw[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
+										modifiedmass_raw_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1 / 100));
+									}
 								}
 							}
 
@@ -352,9 +360,13 @@ void get_all_bk_mc(int opt = 1)
 								{
 									for (int m = 0; m < nbins_smear; m++)
 									{
-										double randomsmear = randGen.Gaus(mean, smear_bin[m]);
-										double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
-										modifiedmass[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
+										for (int nsamples = 0; nsamples < 100; ++nsamples)
+										{
+											double randomsmear = randGen.Gaus(mean, smear_bin[m]);
+											double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
+											// modifiedmass[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
+											modifiedmass_eta_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1 / 100));
+										}
 									}
 								}
 							}
@@ -422,24 +434,15 @@ void get_all_bk_mc(int opt = 1)
 		mass_array_tau_witheta_witheff[i]->Write("", 2);
 
 		rooreco[i]->Write("", 2);
-		;
 		rooreco_y[i]->Write("", 2);
-		;
 		rooreco_eff[i]->Write("", 2);
-		;
 		rooreco_y_eff[i]->Write("", 2);
-		;
 		rooreco_eta[i]->Write("", 2);
-		;
 		rooreco_eta_eff[i]->Write("", 2);
-		;
 
 		roogen[i]->Write("", 2);
-		;
 		roogen_y[i]->Write("", 2);
-		;
 		roogen_eta[i]->Write("", 2);
-		;
 	}
 
 	TFile *modified_histogram_file = new TFile("./rootfile/modified_signal.root", "UPDATE");
@@ -451,8 +454,10 @@ void get_all_bk_mc(int opt = 1)
 		{
 			for (int k = 0; k < nbins_cent; k++)
 			{
-				modifiedmass[i][j][k]->Write("", 2);
-				modifiedmass_raw[i][j][k]->Write("", 2);
+				// modifiedmass[i][j][k]->Write("", 2);
+				// modifiedmass_raw[i][j][k]->Write("", 2);
+				modifiedmass_raw_without_eff[i][j][k]->Write("", 2);
+				modifiedmass_eta_without_eff[i][j][k]->Write("", 2);
 			}
 		}
 	}
