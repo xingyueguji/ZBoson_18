@@ -23,6 +23,7 @@
 
 void get_all_bk_mc(int opt = 1)
 {
+	auto start = std::chrono::high_resolution_clock::now();
 	TH1::SetDefaultSumw2();
 	// opt == 1 means signal MC;
 	// opt == 2 means W;
@@ -177,7 +178,25 @@ void get_all_bk_mc(int opt = 1)
 	for (int i = 0; i < s->t1->GetEntries(); i++)
 	{
 		double percentage = 100.0 * i / s->t1->GetEntries();
-		std::cout << "Progress: " << percentage << "% completed\r" << std::flush;
+		if (i % 10000 == 0)
+		{
+			auto now = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> elapsed = now - start;
+
+			// Estimate remaining time
+			double remaining_time = elapsed.count() * (s->t1->GetEntries() - i) / i;
+
+			// Convert remaining time to a human-readable format (hours, minutes, seconds)
+			int hours = static_cast<int>(remaining_time) / 3600;
+			int minutes = (static_cast<int>(remaining_time) % 3600) / 60;
+			int seconds = static_cast<int>(remaining_time) % 60;
+
+			// Output progress and estimated time remaining
+			std::cout << "Progress: " << percentage << "% completed, "
+					  << "Estimated time remaining: "
+					  << hours << "h " << minutes << "m " << seconds << "s\r"
+					  << std::flush;
+		}
 
 		// W part
 		s->t1->GetEntry(i);
@@ -224,8 +243,8 @@ void get_all_bk_mc(int opt = 1)
 			}
 		}
 
-		// This is for gen level
-		for (unsigned int j = 0; j < s->candSize_gen; j++)
+		// This is for gen level, skipped oct 8 just for faster processing
+		/*for (unsigned int j = 0; j < s->candSize_gen; j++)
 		{
 			if (s->PID_gen[j] != 23)
 				continue;
@@ -271,7 +290,7 @@ void get_all_bk_mc(int opt = 1)
 					}
 				}
 			}
-		}
+		}*/
 
 		// This is for reco level
 		for (unsigned int j = 0; j < s->candSize; j++)
@@ -305,8 +324,8 @@ void get_all_bk_mc(int opt = 1)
 
 			if (isOppositeSign)
 			{
-				// Here's for eta distribution check
-				if (opt == 1)
+				// Here's for eta distribution check skipped Oct 8
+				/*if (opt == 1)
 				{
 					y_without_cut->Fill(s->y[j]);
 					if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
@@ -315,7 +334,7 @@ void get_all_bk_mc(int opt = 1)
 							cout << "Warning Z has y > 1 with eta cut < 1 on both" << endl;
 						y_with_cut->Fill(s->y[j]);
 					}
-				}
+				}*/
 
 				for (int k = 0; k < s->centarraysize; k++)
 				{
@@ -323,55 +342,56 @@ void get_all_bk_mc(int opt = 1)
 					{
 						if (!isTau)
 						{
-							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+							/*double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 							mass_array[k]->Fill(s->mass[j], eventweight);
 							mass_array_with_eff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
 							roomass[k]->setVal(s->mass[j]);
 							rooreco[k]->add(RooArgSet(*roomass[k]), eventweight);
-							rooreco_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
+							rooreco_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);*/
 
 							for (int l = 0; l < nbins_mass_shift; l++)
 							{
 								for (int m = 0; m < nbins_smear; m++)
 								{
-									for (int nsamples = 0; nsamples < 100; ++nsamples)
+									for (int nsamples = 0; nsamples < 10; ++nsamples)
 									{
 										double randomsmear = randGen.Gaus(mean, smear_bin[m]);
 										double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
 										// modifiedmass_raw[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
-										modifiedmass_raw_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1 / 100));
+										modifiedmass_raw_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1 / 10));
 									}
 								}
 							}
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 							{
-								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+								// Skipped Oct 8
+								/*double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 								mass_array_witheta[k]->Fill(s->mass[j], eventweight);
 								mass_array_witheta_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
 								roomass[k]->setVal(s->mass[j]);
 								rooreco_eta[k]->add(RooArgSet(*roomass[k]), eventweight);
-								rooreco_eta_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
+								rooreco_eta_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);*/
 
 								// Here's the shift and smearing part:
 								for (int l = 0; l < nbins_mass_shift; l++)
 								{
 									for (int m = 0; m < nbins_smear; m++)
 									{
-										for (int nsamples = 0; nsamples < 100; ++nsamples)
+										for (int nsamples = 0; nsamples < 10; ++nsamples)
 										{
 											double randomsmear = randGen.Gaus(mean, smear_bin[m]);
 											double updatedmass = (s->mass[j]) * randomsmear + shift_bin[l];
 											// modifiedmass[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
-											modifiedmass_eta_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1 / 100));
+											modifiedmass_eta_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1 / 10));
 										}
 									}
 								}
 							}
-
-							if (abs(s->y[j]) < 1)
+							// Skipped Oct 8
+							/*if (abs(s->y[j]) < 1)
 							{
 								mass_array_withy[k]->Fill(s->mass[j], eventweight);
 								mass_array_withy_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
@@ -379,9 +399,9 @@ void get_all_bk_mc(int opt = 1)
 								roomass[k]->setVal(s->mass[j]);
 								rooreco_y[k]->add(RooArgSet(*roomass[k]), eventweight);
 								rooreco_y_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
-							}
+							}*/
 						}
-						if (isTau)
+						/*if (isTau) // Skipped Oct 8
 						{
 							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 							mass_array_tau[k]->Fill(s->mass[j], eventweight);
@@ -399,7 +419,7 @@ void get_all_bk_mc(int opt = 1)
 								mass_array_tau_withy[k]->Fill(s->mass[j], eventweight);
 								mass_array_tau_withy_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 							}
-						}
+						}*/
 					}
 				}
 			}
@@ -414,7 +434,7 @@ void get_all_bk_mc(int opt = 1)
 	if (opt == 3)
 		histogram_file = new TFile("./rootfile/mc_tt.root", "UPDATE");
 
-	histogram_file->cd();
+	/*histogram_file->cd(); // Skipped Oct 8
 	event_weight->Write("", 2);
 
 	for (int i = 0; i < s->centarraysize; i++)
@@ -443,7 +463,7 @@ void get_all_bk_mc(int opt = 1)
 		roogen[i]->Write("", 2);
 		roogen_y[i]->Write("", 2);
 		roogen_eta[i]->Write("", 2);
-	}
+	}*/
 
 	TFile *modified_histogram_file = new TFile("./rootfile/modified_signal.root", "UPDATE");
 	modified_histogram_file->cd();
@@ -462,7 +482,7 @@ void get_all_bk_mc(int opt = 1)
 		}
 	}
 
-	if (opt == 1)
+	/*if (opt == 1) // Skipped Oct 8
 	{
 		TCanvas *c1 = new TCanvas("", "", 1200, 600);
 		c1->Divide(2, 1);
@@ -472,9 +492,11 @@ void get_all_bk_mc(int opt = 1)
 		c1->cd(2);
 		y_with_cut->Draw("hist");
 		c1->SaveAs("./etacheck/mc_signal.pdf");
-	}
+	}*/
 
 	histogram_file->Close();
 	modified_histogram_file->Close();
 	s->f1->Close();
+
+	cout << "All Finished F*** the internet" << endl;
 }
