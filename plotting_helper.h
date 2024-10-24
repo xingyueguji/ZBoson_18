@@ -43,8 +43,8 @@ class plotting_helper{
 	double Nmb = 11775759052;
 
 	float crossSectionModifier = 0.92623216;
-	Int_t cenlowlimit[11] = {0,10,20,30,50,0,15,70,0,14,0};
-	Int_t cenhighlimit[11] = {10,20,30,50,100,15,100,90,14,100,100};
+	Int_t cenlowlimit[11] = {0,10,20,30,30,0,15,50,0,14,0};
+	Int_t cenhighlimit[11] = {10,20,30,100,50,15,100,100,14,100,100};
 
 
 };
@@ -154,8 +154,8 @@ void plotting_helper::compositeplot(TH1D* h_1, TH1D* h_2, TH1D* h_3, TH1D* h_4, 
 	logoextra.SetTextFont(52);
 	//logoextra.DrawLatex(0.2,0.83,"Preliminary");
   if (opt == 1)c1->SaveAs(Form("./newcomposite/raw/composite_%i.pdf",x));
-  if (opt == 2)c1->SaveAs(Form("./newcomposite/eff/composite_%i.pdf",x));
-  if (opt == 3)c1->SaveAs(Form("./newcomposite/y/composite_%i.pdf",x));
+  if (opt == 2)c1->SaveAs(Form("./newcomposite/y/composite_%i.pdf",x));
+  if (opt == 3)c1->SaveAs(Form("./newcomposite/eff/composite_%i.pdf",x));
   if (opt == 4)c1->SaveAs(Form("./newcomposite/y_eff/composite_%i.pdf",x));
   if (opt == 5)c1->SaveAs(Form("./newcomposite/eta/composite_%i.pdf",x));
   if (opt == 6)c1->SaveAs(Form("./newcomposite/eta_eff/composite_%i.pdf",x));
