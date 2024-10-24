@@ -3,3 +3,10 @@
 rootfile/mc_signal.root
 *.txt
 *.png
+*.so
+.vscode/
+Dict.cxx
+Dict.h
+Dict_rdict.pcm
+newcomposite/.DS_Store
+libDict.so
