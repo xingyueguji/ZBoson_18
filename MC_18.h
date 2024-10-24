@@ -47,8 +47,8 @@ class MC_18{
 
 	
 
-	TString MC_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
-	//TString MC_File_Path = "./VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
+	//TString MC_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
+	TString MC_File_Path = "~/mc_signal_file.root";
 	TString MC_W_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_WJetsToLNu_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
 	TString MC_tt_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_TTJets_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
 	TString Data_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_OppositeSignSkim_HLTbit6_gt0Cands_v2.root";
@@ -149,8 +149,8 @@ class MC_18{
 
 	//centrality range def
 	Int_t centarraysize = 11;
-	Int_t cenlowlimit[11] = {0,10,20,30,50,0,15,70,0,14,0};
-	Int_t cenhighlimit[11] = {10,20,30,50,100,15,100,90,14,100,100};
+	Int_t cenlowlimit[11] = {0,10,20,30,30,0,15,50,0,14,0};
+	Int_t cenhighlimit[11] = {10,20,30,100,50,15,100,100,14,100,100};
 
 	Float_t rapidity = 0;
 
