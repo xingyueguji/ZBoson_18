@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc(int opt = 1, int numberofsamples = 50, double shiftlowbin = -1, double shifthighbin = 0.4, double smearlowbin = 0.0, double smearhighbin = 0.04)
+void get_all_bk_mc(int jobID = 0, int numSegments = 100, int opt = 1, int numberofsamples = 1000, double shiftlowbin = -0.5, double shifthighbin = 0.2, double smearlowbin = 0.0, double smearhighbin = 0.015)
 {
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -32,8 +32,8 @@ void get_all_bk_mc(int opt = 1, int numberofsamples = 50, double shiftlowbin = -
 	// dont have to worry about starlight
 
 	// Create matrix of shifted/smeared signal mc mass distribution.
-	const int nbins_mass_shift = 41;
-	const int nbins_smear = 41;
+	const int nbins_mass_shift = 21;
+	const int nbins_smear = 21;
 	const int nbins_cent = 11;
 	cout << "This is mass shift from " << shiftlowbin << " to " << shifthighbin << " Smearing from " << smearlowbin << " to " << smearhighbin << " With " << numberofsamples << " Samples " << " Binning : " << nbins_mass_shift << " " << nbins_smear << endl;
 	TH1D *modifiedmass[nbins_mass_shift][nbins_smear][nbins_cent];
@@ -182,10 +182,16 @@ void get_all_bk_mc(int opt = 1, int numberofsamples = 50, double shiftlowbin = -
 
 	cout << "entires is " << s->t1->GetEntries() << endl;
 
-	for (int i = 0; i < s->t1->GetEntries(); i++)
+	Long64_t totalEntries = s->t1->GetEntries();
+	Long64_t entriesPerSegment = totalEntries / numSegments;
+	Long64_t startEntry = jobID * entriesPerSegment;
+	Long64_t endEntry = (jobID == numSegments - 1) ? totalEntries : (jobID + 1) * entriesPerSegment;
+	std::cout << "Processing segment " << jobID << ": Entries " << startEntry << " to " << endEntry - 1 << std::endl;
+
+	for (int i = startEntry; i < endEntry; i++)
 	{
 		double percentage = 100.0 * i / s->t1->GetEntries();
-		if (i % 10000 == 0)
+		if (i % 1000 == 0)
 		{
 			auto now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed = now - start;
@@ -482,7 +488,7 @@ void get_all_bk_mc(int opt = 1, int numberofsamples = 50, double shiftlowbin = -
 		roogen_eta[i]->Write("", 2);
 	}*/
 
-	TFile *modified_histogram_file = new TFile(Form("./rootfile/shift_%.1f_%.1f_smear_%.1f_%.3f_modified_signal_%i_%i_%i.root", shiftlowbin, shifthighbin, smearlowbin, smearhighbin, nbins_mass_shift, nbins_smear, numberofsamples), "UPDATE");
+	TFile *modified_histogram_file = new TFile(Form("./rootfile/jobID_%i_shift_%.1f_%.1f_smear_%.1f_%.3f_modified_signal_%i_%i_%i.root", jobID, shiftlowbin ,shifthighbin, smearlowbin, smearhighbin, nbins_mass_shift, nbins_smear, numberofsamples), "UPDATE");
 	modified_histogram_file->cd();
 
 	for (int i = 0; i < nbins_mass_shift; i++)
