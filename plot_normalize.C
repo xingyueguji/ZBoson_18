@@ -1,5 +1,5 @@
 #include "plotting_helper.h"
-void plot_normalize(int opt = 5){
+void plot_normalize(int opt = 6){
 	// opt == 1 raw
 	// opt == 2 ycut
 	// opt == 3 eff

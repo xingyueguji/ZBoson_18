@@ -64,6 +64,9 @@ void get_data(){
 
 	TH1D *h_cent = new TH1D("h_cent","h_cent",100,0,200);
 
+	TH1D *h_Z_pt = new TH1D("h_Z_pt","h_Z_pt",300,0,300);
+	TH1D *h_Z_pt_eta = new TH1D("h_Z_pt_eta","h_Z_pt_eta",300,0,300);
+
 	y_with_cut = new TH1D("y_with_cut","Z_rapidity_with_cut",100,-3,3);
 	y_without_cut = new TH1D("y_without_cut","Z_rapidity_without_cut",100,-3,3);
 
@@ -165,7 +168,9 @@ void get_data(){
 			if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1)) {
 				if (abs(data->y[j]) > 1) cout << "Warning Z has y > 1 with eta cut < 1 on both" << endl;
 				y_with_cut->Fill(data->y[j]);
+				h_Z_pt_eta->Fill(data->pT[j]);
 			}
+			h_Z_pt->Fill(data->pT[j]);
 
 			for (int k=0; k<data->centarraysize; k++){
 				if (centbinpositioncounter[k] != 0 ){
@@ -299,12 +304,16 @@ void get_data(){
 	}
 
 	TCanvas *c1 = new TCanvas("","",1200,600);
-	c1->Divide(2,1);
+	c1->Divide(2,2);
 	//c1->SetLogy(1);
 	c1->cd(1);
-	y_without_cut->Draw("hist");
+	h_Z_pt_eta->Draw("hist");
 	c1->cd(2);
+	h_Z_pt->Draw("hist");
+	c1->cd(3);
 	y_with_cut->Draw("hist");
+	c1->cd(4);
+	y_without_cut->Draw("hist");
 
 	TCanvas *c2 = new TCanvas("","",1200,600);
 
@@ -313,7 +322,7 @@ void get_data(){
 
 	
 
-	c1->SaveAs("./etacheck/data.pdf");
+	c1->SaveAs("./etacheck/data_pt.pdf");
 	c2->SaveAs("./etacheck/cent.pdf");
 
 

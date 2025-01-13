@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numberofsamples = 100, double shiftlowbin = -0.15, double shifthighbin = -0.1, double smearlowbin = 0.006, double smearhighbin = 0.012)
+void get_all_bk_mc(int opt = 3)
 {
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -30,26 +30,6 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 	// opt == 2 means W;
 	// opt == 3 means tt;
 	// dont have to worry about starlight
-
-	// Create matrix of shifted/smeared signal mc mass distribution.
-	double fixed_shift = -0.15;
-	double fixed_smear = 0.0075;
-	const int nbins_mass_shift = 21;
-	const int nbins_smear = 21;
-	const int nbins_cent = 11;
-	cout << "This is mass shift from " << shiftlowbin << " to " << shifthighbin << " Smearing from " << smearlowbin << " to " << smearhighbin << " With " << numberofsamples << " Samples " << " Binning : " << nbins_mass_shift << " " << nbins_smear << endl;
-	TH1D *modifiedmass[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *modifiedmass_raw[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *modifiedmass_raw_without_eff[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *modifiedmass_eta_without_eff[nbins_mass_shift][nbins_smear][nbins_cent];
-
-	TH1D *modifiedmass_raw_without_eff_new[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *modifiedmass_eta_without_eff_new[nbins_mass_shift][nbins_smear][nbins_cent];
-
-	TH1D *modifiedmass_raw_without_eff_new_fixed_1sample[nbins_cent];
-	TH1D *modifiedmass_eta_without_eff_new_fixed_1sample[nbins_cent];
-	TH1D *modifiedmass_raw_without_eff_new_fixed_nsample[nbins_cent];
-	TH1D *modifiedmass_eta_without_eff_new_fixed_nsample[nbins_cent];
 
 	for (int i = 0; i < nbins_mass_shift; i++)
 	{
@@ -74,27 +54,6 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 			}
 		}
 	}
-
-	double shift_bin[nbins_mass_shift];
-	double smear_bin[nbins_smear];
-
-	double shiftamount = (shifthighbin - shiftlowbin) / (nbins_mass_shift - 1); // 21 ticks from -0.5 to 0.5, 20 divisions
-	double smearedamount = (smearhighbin - smearlowbin) / (nbins_smear - 1);	// 21 ticks from 0 to 0.2, 20 divisions.
-
-	cout << "Shift amount is " << shiftamount << " Smear amount is " << smearedamount << endl;
-
-	for (int i = 0; i < nbins_mass_shift; i++)
-	{
-		shift_bin[i] = shiftlowbin + i * shiftamount;
-	}
-	for (int j = 0; j < nbins_smear; j++)
-	{
-		smear_bin[j] = 0 + j * smearedamount;
-	}
-
-	TRandom3 randGen;
-
-	double mean = 1;
 
 	gSystem->Load("./libDict.so");
 
@@ -276,8 +235,7 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 			}
 		}
 
-		// This is for gen level, skipped oct 8 just for faster processing
-		/*for (unsigned int j = 0; j < s->candSize_gen; j++)
+		for (unsigned int j = 0; j < s->candSize_gen; j++)
 		{
 			if (s->PID_gen[j] != 23)
 				continue;
@@ -323,7 +281,7 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 					}
 				}
 			}
-		}*/
+		}
 
 		// This is for reco level
 		for (unsigned int j = 0; j < s->candSize; j++)
@@ -358,8 +316,7 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 
 			if (isOppositeSign)
 			{
-				// Here's for eta distribution check skipped Oct 8
-				/*if (opt == 1)
+				if (opt == 1)
 				{
 					y_without_cut->Fill(s->y[j]);
 					if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
@@ -368,7 +325,7 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 							cout << "Warning Z has y > 1 with eta cut < 1 on both" << endl;
 						y_with_cut->Fill(s->y[j]);
 					}
-				}*/
+				}
 
 				for (int k = 0; k < s->centarraysize; k++)
 				{
@@ -376,82 +333,25 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 					{
 						if (!isTau)
 						{
-							/*double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 							mass_array[k]->Fill(s->mass[j], eventweight);
 							mass_array_with_eff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
 							roomass[k]->setVal(s->mass[j]);
 							rooreco[k]->add(RooArgSet(*roomass[k]), eventweight);
-							rooreco_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);*/
-
-							for (int l = 0; l < nbins_mass_shift; l++)
-							{
-								for (int m = 0; m < nbins_smear; m++)
-								{
-									for (int nsamples = 0; nsamples < numberofsamples; ++nsamples)
-									{
-
-										double randomsmear_1 = randGen.Gaus(0, smear_bin[m]) * 91.1876;
-										double updatedmass_1 = (s->mass[j]) + randomsmear_1 + shift_bin[l];
-										// cout << "updatedmass is " << updatedmass << endl;
-										//  modifiedmass_raw[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
-										// modifiedmass_raw_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1.0 / numberofsamples));
-
-										modifiedmass_raw_without_eff_new[l][m][k]->Fill(updatedmass_1, eventweight * (1.0 / numberofsamples));
-
-										/*if (l == 0 && m == 0)
-										{
-											double randomsmearfix = randGen.Gaus(0, fixed_smear) * 91.1876;
-											double updatedmass_fix = (s->mass[j]) + randomsmearfix + fixed_shift;
-
-											if (nsamples == 0)
-											{
-												modifiedmass_raw_without_eff_new_fixed_1sample[k]->Fill(updatedmass_fix, eventweight);
-											}
-											modifiedmass_raw_without_eff_new_fixed_nsample[k]->Fill(updatedmass_fix, eventweight * (1.0 / numberofsamples));
-										}*/
-									}
-								}
-							}
+							rooreco_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 							{
 								// Skipped Oct 8
-								/*double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 								mass_array_witheta[k]->Fill(s->mass[j], eventweight);
 								mass_array_witheta_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
 								roomass[k]->setVal(s->mass[j]);
 								rooreco_eta[k]->add(RooArgSet(*roomass[k]), eventweight);
-								rooreco_eta_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);*/
+								rooreco_eta_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
 
-								// Here's the shift and smearing part:
-								for (int l = 0; l < nbins_mass_shift; l++)
-								{
-									for (int m = 0; m < nbins_smear; m++)
-									{
-										for (int nsamples = 0; nsamples < numberofsamples; ++nsamples)
-										{
-											double randomsmear_1 = randGen.Gaus(0, smear_bin[m]) * 91.1876;
-											double updatedmass_1 = (s->mass[j]) + randomsmear_1 + shift_bin[l];
-											// modifiedmass[l][m][k]->Fill(updatedmass, 1.0 / efficiency * eventweight);
-											// modifiedmass_eta_without_eff[l][m][k]->Fill(updatedmass, eventweight * (1.0 / numberofsamples));
-											modifiedmass_eta_without_eff_new[l][m][k]->Fill(updatedmass_1, eventweight * (1.0 / numberofsamples));
-
-											/*if (l == 0 && m == 0)
-											{
-												double randomsmearfix = randGen.Gaus(0, fixed_smear) * 91.1876;
-												double updatedmass_fix = (s->mass[j]) + randomsmearfix + fixed_shift;
-
-												if (nsamples == 0)
-												{
-													modifiedmass_eta_without_eff_new_fixed_1sample[k]->Fill(updatedmass_fix, eventweight);
-												}
-												modifiedmass_eta_without_eff_new_fixed_nsample[k]->Fill(updatedmass_fix, eventweight * (1.0 / numberofsamples));
-											}*/
-										}
-									}
-								}
 							}
 							// Skipped Oct 8
 							/*if (abs(s->y[j]) < 1)
@@ -464,7 +364,7 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 								rooreco_y_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
 							}*/
 						}
-						/*if (isTau) // Skipped Oct 8
+						if (isTau) // Skipped Oct 8
 						{
 							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 							mass_array_tau[k]->Fill(s->mass[j], eventweight);
@@ -482,7 +382,7 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 								mass_array_tau_withy[k]->Fill(s->mass[j], eventweight);
 								mass_array_tau_withy_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 							}
-						}*/
+						}
 					}
 				}
 			}
@@ -490,14 +390,14 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 	}
 
 	TFile *histogram_file;
-	//if (opt == 1)
-		//histogram_file = new TFile("./rootfile/mc_signal.root", "UPDATE");
-	//if (opt == 2)
-		//histogram_file = new TFile("./rootfile/mc_w.root", "UPDATE");
-	//if (opt == 3)
-		//histogram_file = new TFile("./rootfile/mc_tt.root", "UPDATE");
+	if (opt == 1)
+		histogram_file = new TFile("./rootfile/mc_signal.root", "UPDATE");
+	if (opt == 2)
+		histogram_file = new TFile("./rootfile/mc_w.root", "UPDATE");
+	if (opt == 3)
+		histogram_file = new TFile("./rootfile/mc_tt.root", "UPDATE");
 
-	/*histogram_file->cd(); // Skipped Oct 8
+	histogram_file->cd(); // Skipped Oct 8
 	event_weight->Write("", 2);
 
 	for (int i = 0; i < s->centarraysize; i++)
@@ -526,39 +426,9 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 		roogen[i]->Write("", 2);
 		roogen_y[i]->Write("", 2);
 		roogen_eta[i]->Write("", 2);
-	}*/
-
-	TFile *modified_histogram_file = new TFile(Form("./rootfile/jobID_%i_shift_%.3f_%.3f_smear_%.3f_%.3f_modified_signal_%i_%i_%i.root", jobID, shiftlowbin, shifthighbin, smearlowbin, smearhighbin, nbins_mass_shift, nbins_smear, numberofsamples), "UPDATE");
-	modified_histogram_file->cd();
-
-	for (int i = 0; i < nbins_mass_shift; i++)
-	{
-		for (int j = 0; j < nbins_smear; j++)
-		{
-			for (int k = 0; k < nbins_cent; k++)
-			{
-				// modifiedmass[i][j][k]->Write("", 2);
-				// modifiedmass_raw[i][j][k]->Write("", 2);
-				modifiedmass_raw_without_eff[i][j][k]->Write("", 2);
-				modifiedmass_eta_without_eff[i][j][k]->Write("", 2);
-
-				modifiedmass_raw_without_eff_new[i][j][k]->Write("", 2);
-				modifiedmass_eta_without_eff_new[i][j][k]->Write("", 2);
-				//modifiedmass_eta_without_eff_new_fixed_nsample[k]->Write("", 2);
-			}
-		}
 	}
 
-	/*TFile *fixed_modified_histogram_file = new TFile(Form("./rootfile/jobID_%i_shift_%.3f_smear_%.4f_fixed_modified_signal_%i.root", jobID, fixed_shift, fixed_smear, numberofsamples), "UPDATE");
-	fixed_modified_histogram_file->cd();
-	for (int cent = 0; cent < nbins_cent; cent++)
-	{
-		modifiedmass_raw_without_eff_new_fixed_1sample[cent]->Write("", 2);
-		modifiedmass_eta_without_eff_new_fixed_1sample[cent]->Write("", 2);
-		modifiedmass_raw_without_eff_new_fixed_nsample[cent]->Write("", 2);
-		modifiedmass_eta_without_eff_new_fixed_nsample[cent]->Write("", 2);
-	}*/
-	/*if (opt == 1) // Skipped Oct 8
+	if (opt == 1) // Skipped Oct 8
 	{
 		TCanvas *c1 = new TCanvas("", "", 1200, 600);
 		c1->Divide(2, 1);
@@ -568,12 +438,10 @@ void get_all_bk_mc(int jobID = 9, int numSegments = 10, int opt = 1, int numbero
 		c1->cd(2);
 		y_with_cut->Draw("hist");
 		c1->SaveAs("./etacheck/mc_signal.pdf");
-	}*/
+	}
 
-	//histogram_file->Close();
-	modified_histogram_file->Close();
+	histogram_file->Close();
 	s->f1->Close();
-	//fixed_modified_histogram_file->Close();
 
 	cout << "All Finished F*** the internet" << endl;
 }
