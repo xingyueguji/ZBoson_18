@@ -1,7 +1,0 @@
-{ decls }
-namespace std {  }
-
-[ libDict.so ]
-# List of selected classes
-class vector<unsigned char>
-class vector<vector<unsigned char> >

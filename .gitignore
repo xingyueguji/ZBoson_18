@@ -16,3 +16,14 @@ vectorDictLinkDef.h
 libDict.so
 LinkDef.h
 DictLinkDef.h
+.DS_Store
+libDict.rootmap
+myDict.cxx
+myDict_rdict.pcm
+myLinkDef.h
+.DS_Store
+.get_all_bk_mc.C.swp
+DictOutput.cxx
+DictOutput_rdict.pcm
+vectorDict.cxx
+vectorDict.cxx_tmp_2003233
