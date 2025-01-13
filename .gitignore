@@ -13,3 +13,6 @@ libDict.so
 vectorDict.h
 vectorDict_rdict.pcm
 vectorDictLinkDef.h
+libDict.so
+LinkDef.h
+DictLinkDef.h

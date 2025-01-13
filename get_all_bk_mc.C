@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc(int opt = 3)
+void get_all_bk_mc(int opt = 1)
 {
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -30,30 +30,6 @@ void get_all_bk_mc(int opt = 3)
 	// opt == 2 means W;
 	// opt == 3 means tt;
 	// dont have to worry about starlight
-
-	for (int i = 0; i < nbins_mass_shift; i++)
-	{
-		for (int j = 0; j < nbins_smear; j++)
-		{
-			for (int k = 0; k < nbins_cent; k++)
-			{
-				modifiedmass[i][j][k] = new TH1D(Form("modifiedmass_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				modifiedmass_raw[i][j][k] = new TH1D(Form("modifiedmass_raw_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				modifiedmass_raw_without_eff[i][j][k] = new TH1D(Form("modifiedmass_raw_without_eff_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				modifiedmass_eta_without_eff[i][j][k] = new TH1D(Form("modifiedmass_eta_without_eff_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				modifiedmass_raw_without_eff_new[i][j][k] = new TH1D(Form("modifiedmass_raw_without_eff_%i_%i_%i_new", i, j, k), "", 120, 60, 120);
-				modifiedmass_eta_without_eff_new[i][j][k] = new TH1D(Form("modifiedmass_eta_without_eff_%i_%i_%i_new", i, j, k), "", 120, 60, 120);
-
-				if (i == 0 && j == 0)
-				{
-					modifiedmass_raw_without_eff_new_fixed_1sample[k] = new TH1D(Form("modifiedmass_raw_without_eff_fixed_1sample_%i", k), "", 120, 60, 120);
-					modifiedmass_eta_without_eff_new_fixed_1sample[k] = new TH1D(Form("modifiedmass_eta_without_eff_fixed_1sample_%i", k), "", 120, 60, 120);
-					modifiedmass_raw_without_eff_new_fixed_nsample[k] = new TH1D(Form("modifiedmass_raw_without_eff_fixed_nsample_%i", k), "", 120, 60, 120);
-					modifiedmass_eta_without_eff_new_fixed_nsample[k] = new TH1D(Form("modifiedmass_eta_without_eff_fixed_nsample_%i", k), "", 120, 60, 120);
-				}
-			}
-		}
-	}
 
 	gSystem->Load("./libDict.so");
 
@@ -90,28 +66,19 @@ void get_all_bk_mc(int opt = 3)
 	// Histogram setup
 	TH1D *event_weight = new TH1D("event_weight", "event_weight", 1, 0, 1);
 	TH1D *mass_array[11];
-	TH1D *mass_array_withy[11];
 	TH1D *mass_array_with_eff[11];
-	TH1D *mass_array_withy_witheff[11];
 	TH1D *mass_array_witheta[11];
 	TH1D *mass_array_witheta_witheff[11];
 
 	TH1D *mass_array_tau[11];
-	TH1D *mass_array_tau_withy[11];
 	TH1D *mass_array_tau_with_eff[11];
-	TH1D *mass_array_tau_withy_witheff[11];
 	TH1D *mass_array_tau_witheta[11];
 	TH1D *mass_array_tau_witheta_witheff[11];
-
-	TH1D *y_without_cut;
-	TH1D *y_with_cut;
 
 	RooRealVar *roomass[11];
 
 	RooDataSet *rooreco[11];
-	RooDataSet *rooreco_y[11];
 	RooDataSet *rooreco_eff[11];
-	RooDataSet *rooreco_y_eff[11];
 	RooDataSet *rooreco_eta[11];
 	RooDataSet *rooreco_eta_eff[11];
 
@@ -125,9 +92,7 @@ void get_all_bk_mc(int opt = 3)
 		roomass[i]->setBinning(RooBinning(10000, 60, 120));
 
 		rooreco[i] = new RooDataSet(Form("rooreco_%i", i), Form("rooreco_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		rooreco_y[i] = new RooDataSet(Form("rooreco_y_%i", i), Form("rooreco_y_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
 		rooreco_eff[i] = new RooDataSet(Form("rooreco_eff_%i", i), Form("rooreco_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		rooreco_y_eff[i] = new RooDataSet(Form("rooreco_y_eff_%i", i), Form("rooreco_y_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
 		rooreco_eta[i] = new RooDataSet(Form("rooreco_eta_%i", i), Form("rooreco_eta_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
 		rooreco_eta_eff[i] = new RooDataSet(Form("rooreco_eta_eff_%i", i), Form("rooreco_eta_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
 
@@ -136,46 +101,33 @@ void get_all_bk_mc(int opt = 3)
 		roogen_eta[i] = new RooDataSet(Form("roogen_eta_%i", i), Form("roogen_eta_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
 	}
 
-	y_with_cut = new TH1D("y_with_cut", "Z_rapidity_with_cut", 100, -3, 3);
-	y_without_cut = new TH1D("y_without_cut", "Z_rapidity_without_cut", 100, -3, 3);
-
 	for (int i = 0; i < s->centarraysize; i++)
 	{
 		mass_array[i] = new TH1D(Form("mass_array_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_withy[i] = new TH1D(Form("mass_array_withy_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_with_eff[i] = new TH1D(Form("mass_array_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_withy_witheff[i] = new TH1D(Form("mass_array_withy_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_witheta[i] = new TH1D(Form("mass_array_witheta_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_witheta_witheff[i] = new TH1D(Form("mass_array_witheta_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 
 		mass_array_tau[i] = new TH1D(Form("mass_array_tau_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_tau_withy[i] = new TH1D(Form("mass_array_tau_withy_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_tau_with_eff[i] = new TH1D(Form("mass_array_tau_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_tau_withy_witheff[i] = new TH1D(Form("mass_array_tau_withy_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_tau_witheta[i] = new TH1D(Form("mass_array_tau_witheta_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_tau_witheta_witheff[i] = new TH1D(Form("mass_array_tau_witheta_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 	}
 
 	cout << "entires is " << s->t1->GetEntries() << endl;
 
-	Long64_t totalEntries = s->t1->GetEntries();
-	Long64_t entriesPerSegment = totalEntries / numSegments;
-	Long64_t startEntry = jobID * entriesPerSegment;
-	Long64_t endEntry = (jobID == numSegments - 1) ? totalEntries : (jobID + 1) * entriesPerSegment;
-	std::cout << "Processing segment " << jobID << ": Entries " << startEntry << " to " << endEntry - 1 << std::endl;
-
-	for (int i = startEntry; i < endEntry; i++)
+	for (int i = 0; s->t1->GetEntries(); i++)
 	{
-		double percentage = 100.0 * (i - startEntry) / (endEntry - startEntry);
+		double percentage = 100.0 * (i - 0) / (s->t1->GetEntries() - 0);
 
-		if ((i - startEntry) % 1000 == 0)
+		if ((i - 0) % 1000 == 0)
 		{
 
 			auto now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed = now - start;
 
 			// Estimate remaining time based on entries processed within the specified range
-			double remaining_time = elapsed.count() * (endEntry - i) / (i - startEntry + 1);
+			double remaining_time = elapsed.count() * (s->t1->GetEntries() - i) / (i - 0 + 1);
 
 			// Convert remaining time to a human-readable format (hours, minutes, seconds)
 			int hours = static_cast<int>(remaining_time) / 3600;
@@ -318,12 +270,10 @@ void get_all_bk_mc(int opt = 3)
 			{
 				if (opt == 1)
 				{
-					y_without_cut->Fill(s->y[j]);
 					if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 					{
 						if (abs(s->y[j]) > 1)
 							cout << "Warning Z has y > 1 with eta cut < 1 on both" << endl;
-						y_with_cut->Fill(s->y[j]);
 					}
 				}
 
@@ -376,12 +326,6 @@ void get_all_bk_mc(int opt = 3)
 								mass_array_tau_witheta[k]->Fill(s->mass[j], eventweight);
 								mass_array_tau_witheta_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 							}
-
-							if (abs(s->y[j]) < 1)
-							{
-								mass_array_tau_withy[k]->Fill(s->mass[j], eventweight);
-								mass_array_tau_withy_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-							}
 						}
 					}
 				}
@@ -403,23 +347,17 @@ void get_all_bk_mc(int opt = 3)
 	for (int i = 0; i < s->centarraysize; i++)
 	{
 		mass_array[i]->Write("", 2);
-		mass_array_withy[i]->Write("", 2);
 		mass_array_with_eff[i]->Write("", 2);
-		mass_array_withy_witheff[i]->Write("", 2);
 		mass_array_witheta[i]->Write("", 2);
 		mass_array_witheta_witheff[i]->Write("", 2);
 
 		mass_array_tau[i]->Write("", 2);
-		mass_array_tau_withy[i]->Write("", 2);
 		mass_array_tau_with_eff[i]->Write("", 2);
-		mass_array_tau_withy_witheff[i]->Write("", 2);
 		mass_array_tau_witheta[i]->Write("", 2);
 		mass_array_tau_witheta_witheff[i]->Write("", 2);
 
 		rooreco[i]->Write("", 2);
-		rooreco_y[i]->Write("", 2);
 		rooreco_eff[i]->Write("", 2);
-		rooreco_y_eff[i]->Write("", 2);
 		rooreco_eta[i]->Write("", 2);
 		rooreco_eta_eff[i]->Write("", 2);
 
@@ -428,7 +366,7 @@ void get_all_bk_mc(int opt = 3)
 		roogen_eta[i]->Write("", 2);
 	}
 
-	if (opt == 1) // Skipped Oct 8
+	/*if (opt == 1) // Skipped Oct 8
 	{
 		TCanvas *c1 = new TCanvas("", "", 1200, 600);
 		c1->Divide(2, 1);
@@ -438,7 +376,7 @@ void get_all_bk_mc(int opt = 3)
 		c1->cd(2);
 		y_with_cut->Draw("hist");
 		c1->SaveAs("./etacheck/mc_signal.pdf");
-	}
+	}*/
 
 	histogram_file->Close();
 	s->f1->Close();
