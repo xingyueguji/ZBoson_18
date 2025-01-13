@@ -23,6 +23,7 @@
 
 void get_mc_eff(){
 	gSystem->Load("./libDict.so");
+	auto start = std::chrono::high_resolution_clock::now();
 
 	MC_18 *mc_signal_obj = new MC_18();
 	mc_signal_obj->SetupRootfile(1,1);
@@ -35,7 +36,7 @@ void get_mc_eff(){
 
 	TH1::SetDefaultSumw2();
 
-	const int centarraysize = mc_signal_obj->centarraysize;
+	const int centarraysize = 11;
 
 	TH2D *recoEff_pass[centarraysize];
 	TH2D *recoEff_all[centarraysize];
@@ -63,7 +64,29 @@ void get_mc_eff(){
 
 	for (unsigned int i=0; i < mc_signal_obj->t1->GetEntries(); i++){
 		mc_signal_obj->t1->GetEntry(i);
-		if (i%100000 == 0) cout << i << "/" << mc_signal_obj->t1->GetEntries() << endl;
+		
+		double percentage = 100.0 * (i - 0) / (mc_signal_obj->t1->GetEntries() - 0);
+
+		if ((i - 0) % 1000 == 0)
+		{
+
+			auto now = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> elapsed = now - start;
+
+			// Estimate remaining time based on entries processed within the specified range
+			double remaining_time = elapsed.count() * (mc_signal_obj->t1->GetEntries() - i) / (i - 0 + 1);
+
+			// Convert remaining time to a human-readable format (hours, minutes, seconds)
+			int hours = static_cast<int>(remaining_time) / 3600;
+			int minutes = (static_cast<int>(remaining_time) % 3600) / 60;
+			int seconds = static_cast<int>(remaining_time) % 60;
+
+			// Output progress and estimated time remaining
+			std::cout << "Progress: " << percentage << "% completed, "
+					  << "Estimated time remaining: "
+					  << hours << "h " << minutes << "m " << seconds << "s\r"
+					  << std::flush;
+		}
 
 		//event selection cut
 		//hfCoincFilter2Th4 = 1,
