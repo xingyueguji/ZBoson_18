@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc_template(bool ispp = true, int jobID = 0, int numSegments = 1, int opt = 1, int numberofsamples = 100, double shiftlowbin = -0.5, double shifthighbin = 0.0, double smearlowbin = -0.5, double smearhighbin = 0.5)
+void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 1, int opt = 1)
 {
 
 	MC_18 *s = new MC_18();
@@ -37,31 +37,8 @@ void get_all_bk_mc_template(bool ispp = true, int jobID = 0, int numSegments = 1
 	const int nbins_smear = 21;
 	const int nbins_cent = 11;
 
-	double shift_bin[nbins_mass_shift];
-	double smear_bin[nbins_smear];
-
-	double shiftamount = (shifthighbin - shiftlowbin) / (nbins_mass_shift - 1); // 21 ticks from -0.5 to 0.5, 20 divisions
-	double smearedamount = (smearhighbin - smearlowbin) / (nbins_smear - 1);	// 21 ticks from 0 to 0.2, 20 divisions.
-
-	cout << "Shift amount is " << shiftamount << " Smear amount is " << smearedamount << endl;
-
 	TH1D *mass_array_with_eff_template[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *mass_array_witheta_witheff_template[nbins_mass_shift][nbins_smear][nbins_cent];
-
-	for (int i = 0; i < nbins_mass_shift; i++)
-	{
-		shift_bin[i] = shiftlowbin + i * shiftamount;
-		if (fabs(shift_bin[i]) < 1e-10)
-			shift_bin[i] = 0.0;
-		cout << "shift bin " << i << " is " << shift_bin[i] << endl;
-	}
-	for (int j = 0; j < nbins_smear; j++)
-	{
-		smear_bin[j] = smearlowbin + j * smearedamount;
-		if (fabs(smear_bin[j]) < 1e-10)
-			smear_bin[j] = 0.0;
-		cout << "smear bin " << j << " is " << smear_bin[j] << endl;
-	}
 
 	TFile *ratio_file_raw[nbins_cent];
 	TFile *ratio_file_eta[nbins_cent];

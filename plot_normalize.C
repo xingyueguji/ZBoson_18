@@ -1,9 +1,7 @@
 #include "plotting_helper.h"
 void plot_normalize(int opt = 6){
 	// opt == 1 raw
-	// opt == 2 ycut
 	// opt == 3 eff
-	// opt == 4 y + eff
 	// opt == 5 etacut
 	// opt == 6 eta + eff
 
@@ -18,9 +16,7 @@ void plot_normalize(int opt = 6){
 	mc_w = new TFile("./rootfile/mc_w.root","UPDATE");
 
 	TFile *rawnormalized = new TFile("./rootfile/normalized/rawfile.root","UPDATE");
-	TFile *ycutnormalized = new TFile("./rootfile/normalized/ycutfile.root","UPDATE");
 	TFile *effnormalized = new TFile("./rootfile/normalized/efffile.root","UPDATE");
-	TFile *ycut_efnormalized = new TFile("./rootfile/normalized/ycut_eff_file.root","UPDATE");
 	TFile *etacutnormalized =  new TFile("./rootfile/normalized/etacut_file.root","UPDATE");
 	TFile *etacut_effnormalized = new TFile("./rootfile/normalized/etacut_eff_file.root","UPDATE");
 
@@ -43,16 +39,6 @@ void plot_normalize(int opt = 6){
 			mass_array_samesign[i] = (TH1D*) mc_signal->Get(Form("mc_estimate_ss_%i",i));
 
 		}
-		if (opt == 2) {
-
-			mass_array_W[i] = (TH1D*) mc_w->Get(Form("mass_array_withy_%i",i));
-			mass_array_tt[i] = (TH1D*) mc_tt->Get(Form("mass_array_withy_%i",i));
-			mass_array_tau[i] = (TH1D*) mc_signal->Get(Form("mass_array_tau_withy_%i",i));
-			mass_array_signal[i] = (TH1D*) mc_signal->Get(Form("mass_array_withy_%i",i));
-			mass_array_data[i] = (TH1D*) data_file->Get(Form("mass_array_data_withy_%i",i));
-			mass_array_samesign[i] = (TH1D*) mc_signal->Get(Form("mc_estimate_ss_withy_%i",i));
-
-		}
 		if (opt == 3) {
 
 			mass_array_W[i] = (TH1D*) mc_w->Get(Form("mass_array_with_eff_%i",i));
@@ -61,16 +47,6 @@ void plot_normalize(int opt = 6){
 			mass_array_signal[i] = (TH1D*) mc_signal->Get(Form("mass_array_with_eff_%i",i));
 			mass_array_data[i] = (TH1D*) data_file->Get(Form("mass_array_data_with_eff_%i",i));
 			mass_array_samesign[i] = (TH1D*) mc_signal->Get(Form("mc_estimate_ss_with_eff_%i",i));
-
-		}
-		if (opt == 4) {
-
-			mass_array_W[i] = (TH1D*) mc_w->Get(Form("mass_array_withy_witheff_%i",i));
-			mass_array_tt[i] = (TH1D*) mc_tt->Get(Form("mass_array_withy_witheff_%i",i));
-			mass_array_tau[i] = (TH1D*) mc_signal->Get(Form("mass_array_tau_withy_witheff_%i",i));
-			mass_array_signal[i] = (TH1D*) mc_signal->Get(Form("mass_array_withy_witheff_%i",i));
-			mass_array_data[i] = (TH1D*) data_file->Get(Form("mass_array_data_withy_witheff_%i",i));
-			mass_array_samesign[i] = (TH1D*) mc_signal->Get(Form("mc_estimate_ss_withy_witheff_%i",i));
 
 		}
 		if (opt == 5){
@@ -176,9 +152,7 @@ void plot_normalize(int opt = 6){
 
 		ovo->compositeplot(mass_array_data[i],mass_array_signal[i],mass_array_samesign[i],mass_array_tau[i],mass_array_W[i],mass_array_tt[i],i,opt);
 		if (opt == 1)ovo->savehistogram(h_normalized_mc[i],h_normalized_data[i],h_normalized_mc_bk[i],i,rawnormalized);
-		if (opt == 2)ovo->savehistogram(h_normalized_mc[i],h_normalized_data[i],h_normalized_mc_bk[i],i,ycutnormalized);
 		if (opt == 3)ovo->savehistogram(h_normalized_mc[i],h_normalized_data[i],h_normalized_mc_bk[i],i,effnormalized);
-		if (opt == 4)ovo->savehistogram(h_normalized_mc[i],h_normalized_data[i],h_normalized_mc_bk[i],i,ycut_efnormalized);
 		if (opt == 5)ovo->savehistogram(h_normalized_mc[i],h_normalized_data[i],h_normalized_mc_bk[i],i,etacutnormalized);
 		if (opt == 6)ovo->savehistogram(h_normalized_mc[i],h_normalized_data[i],h_normalized_mc_bk[i],i,etacut_effnormalized);
 		

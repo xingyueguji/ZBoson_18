@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc(int opt = 1)
+void get_all_bk_mc(int opt = 2)
 {
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -116,7 +116,7 @@ void get_all_bk_mc(int opt = 1)
 
 	cout << "entires is " << s->t1->GetEntries() << endl;
 
-	for (int i = 0; s->t1->GetEntries(); i++)
+	for (int i = 0; i < s->t1->GetEntries(); i++)
 	{
 		double percentage = 100.0 * (i - 0) / (s->t1->GetEntries() - 0);
 
@@ -290,6 +290,8 @@ void get_all_bk_mc(int opt = 1)
 							roomass[k]->setVal(s->mass[j]);
 							rooreco[k]->add(RooArgSet(*roomass[k]), eventweight);
 							rooreco_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
+
+							if ((1.0 / efficiency * eventweight) < 0) cout << "This is negative! value is " << (1.0 / efficiency * eventweight) << endl;
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 							{
