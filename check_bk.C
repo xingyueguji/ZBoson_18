@@ -1,4 +1,4 @@
-void check_bk(int opt = 1)
+void check_bk(int opt = 4)
 {
     // 1 = raw, 2 = eff, 3 = eta, 4 = eta + eff
     Int_t cenlowlimit[11] = {0, 10, 20, 30, 30, 0, 15, 50, 0, 14, 0};

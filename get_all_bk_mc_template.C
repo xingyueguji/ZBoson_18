@@ -39,6 +39,8 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 
 	TH1D *mass_array_with_eff_template[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *mass_array_witheta_witheff_template[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *mass_array_raw_template[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *mass_array_witheta_template[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	TFile *ratio_file_raw[nbins_cent];
 	TFile *ratio_file_eta[nbins_cent];
@@ -75,11 +77,13 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 				t_ratio_eta[i][j][k] = (TF1 *)ratio_file_eta[k]->Get(Form(ratio_name, i, j));
 				mass_array_with_eff_template[i][j][k] = new TH1D(Form("mass_array_with_eff_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
 				mass_array_witheta_witheff_template[i][j][k] = new TH1D(Form("mass_array_witheta_witheff_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				mass_array_raw_template[i][j][k] = new TH1D(Form("mass_array_raw_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				mass_array_witheta_template[i][j][k] = new TH1D(Form("mass_array_witheta_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
 			}
 		}
 	}
 
-	gSystem->Load("./libDict.so");
+	gSystem->Load("./header/libDict.so");
 
 	MCReweight *vzRW = new MCReweight("WeightsAndEfficiencies_Z2mummu/vzReweight.root", "WeightsAndEfficiencies_Z2mummu/centralityFlatteningWeight.root");
 	PtReweightSpectrum *spectrumRW = new PtReweightSpectrum("WeightsAndEfficiencies_Z2mummu/ptSpectrumReweighting.root");
@@ -111,7 +115,9 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 
 	// Histogram setup
 	TH1D *event_weight = new TH1D("event_weight", "event_weight", 1, 0, 1);
+	TH1D *mass_array_raw[11];
 	TH1D *mass_array_with_eff[11];
+	TH1D *mass_array_witheta[11];
 	TH1D *mass_array_witheta_witheff[11];
 
 	TH1D *mass_array_gen_with_eff[11];
@@ -119,6 +125,8 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 
 	for (int i = 0; i < s->centarraysize; i++)
 	{
+		mass_array_raw[i] = new TH1D(Form("mass_array_raw_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
+		mass_array_witheta[i] = new TH1D(Form("mass_array_witheta_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_with_eff[i] = new TH1D(Form("mass_array_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_witheta_witheff[i] = new TH1D(Form("mass_array_witheta_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
 		mass_array_gen_with_eff[i] = new TH1D(Form("mass_array_gen_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
@@ -262,6 +270,7 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 						{
 							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 							mass_array_with_eff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+							mass_array_raw[k]->Fill(s->mass[j], eventweight);
 							double gen_mass = s->Calc_Z_gen(matchedgenindex);
 							// cout << "gen_mass is " << gen_mass << endl;
 							mass_array_gen_with_eff[k]->Fill(gen_mass, eventweight);
@@ -272,6 +281,7 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 								{
 									double ratio_weight = t_ratio_raw[massshift][smear][k]->Eval(gen_mass);
 									mass_array_with_eff_template[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
+									mass_array_raw_template[massshift][smear][k]->Fill(s->mass[j], eventweight * ratio_weight);
 								}
 							}
 
@@ -279,6 +289,7 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 							{
 								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 								mass_array_witheta_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+								mass_array_witheta[k]->Fill(s->mass[j], eventweight);
 								double gen_mass = s->Calc_Z_gen(matchedgenindex);
 								mass_array_gen_witheta_witheff[k]->Fill(gen_mass, eventweight);
 
@@ -288,6 +299,7 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 									{
 										double ratio_weight = t_ratio_eta[massshift][smear][k]->Eval(gen_mass);
 										mass_array_witheta_witheff_template[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
+										mass_array_witheta_template[massshift][smear][k]->Fill(s->mass[j], eventweight * ratio_weight);
 									}
 								}
 							}
@@ -316,7 +328,9 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 		if (!((i < 4) || (i == 10)))
 			continue;
 		mass_array_with_eff[i]->Write("", 2);
+		mass_array_raw[i]->Write("", 2);
 		mass_array_witheta_witheff[i]->Write("", 2);
+		mass_array_witheta[i]->Write("", 2);
 		mass_array_gen_with_eff[i]->Write("", 2);
 		mass_array_gen_witheta_witheff[i]->Write("", 2);
 	}
@@ -331,6 +345,8 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 			{
 				mass_array_with_eff_template[j][k][i]->Write("", 2);
 				mass_array_witheta_witheff_template[j][k][i]->Write("", 2);
+				mass_array_raw_template[j][k][i]->Write("", 2);
+				mass_array_witheta_template[j][k][i]->Write("", 2);
 				TH1D *Diff = (TH1D *)mass_array_with_eff[i]->Clone();
 				TH1D *Diff_eta = (TH1D *)mass_array_witheta_witheff[i]->Clone();
 				Diff->Add(mass_array_with_eff_template[j][k][i], -1);
