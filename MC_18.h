@@ -44,16 +44,22 @@ public:
 	void forceConsistency(TH2D *top, TH2D *bot);
 	Bool_t tightMuon1Cut(int x, string type);
 	Bool_t tightMuon2Cut(int x, string type);
-	double getEfficiency(TEfficiency* e, double y, double pt);
+	double getEfficiency(TEfficiency *e, double y, double pt);
 
-	
+	// Here's lxplus version
+	// TString MC_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
+	// TString MC_W_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_WJetsToLNu_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
+	// TString MC_tt_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_TTJets_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
+	// TString Data_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_OppositeSignSkim_HLTbit6_gt0Cands_v2.root";
+	// TString Data_File_same_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_SameSignSkim_HLTbit6_gt0Cands_v2.root";
 
-	TString MC_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_DYJetsToLL_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC_20190808.root";
-	//TString MC_File_Path = "~/mc_signal_file.root";
-	TString MC_W_File_Path = "root://cms-xrd-global.cern.ch///store/group/phys_heavyions/abaty/Zmumu_Samples_MC/VertexCompositeTree_WJetsToLNu_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
-	TString MC_tt_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_TTJets_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
-	TString Data_File_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_OppositeSignSkim_HLTbit6_gt0Cands_v2.root";
-	TString Data_File_same_Path = "root://eoshome-a.cern.ch//eos/user/a/abaty/Z_Datasets_vtxTrees_mumu/VertexCompositeTree_SameSignSkim_HLTbit6_gt0Cands_v2.root";
+	// Here's local version
+	TString MC_File_Path = "~/ROOTFILES/mc_signal_file.root";
+	TString MC_W_File_Path = "~/ROOTFILES/VertexCompositeTree_WJetsToLNu_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
+	TString MC_tt_File_Path = "~/ROOTFILES/VertexCompositeTree_TTJets_TuneCP5_HydjetDrumMB_Pythia8_HINPbPbAutumn18_DiMuMC.root";
+	TString Data_File_Path = "~/ROOTFILES/VertexCompositeTree_OppositeSignSkim_HLTbit6_gt0Cands_v2.root";
+	TString Data_File_same_Path = "~/ROOTFILES/VertexCompositeTree_SameSignSkim_HLTbit6_gt0Cands_v2.root";
+
 	TFile *f1;
 	TDirectoryFile *dir1;
 	TTree *t1;

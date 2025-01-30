@@ -14,124 +14,267 @@
 #include "TEfficiency.h"
 #include "ptReweightSpectrum.h"
 
-//C++ stuff
+// C++ stuff
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cmath>
 
-void get_ss_bk(){
+void get_ss_bk()
+{
 	TH1::SetDefaultSumw2();
 	int nbins = 120;
 	TFile *mc_file;
 	TFile *data_file;
 
-	mc_file = new TFile("./rootfile/mc_signal.root","UPDATE");
-	data_file = new TFile("./rootfile/data_file.root","READ");
+	mc_file = new TFile("./rootfile/mc_signal.root", "UPDATE");
+	data_file = new TFile("./rootfile/data_file.root", "READ");
 
-	TH1D* mass_array_data_same_sign[11];
-	TH1D* mass_array_data_same_sign_with_eff[11];
-	TH1D* mass_array_data_same_sign_witheta[11];
-	TH1D* mass_array_data_same_sign_witheta_witheff[11];
+	// Data
+	TH1D *FA_nominal[11];
+	TH1D *Eta_nominal[11];
 
-	TH1D* mass_array_data[11];
-	TH1D* mass_array_data_with_eff[11];
-	TH1D* mass_array_data_witheta[11];
-	TH1D* mass_array_data_witheta_witheff[11];
+	TH1D *FA_AcoOff[11];
+	TH1D *Eta_AcoOff[11];
 
-	TH1D* mass_array[11];
-	TH1D* mass_array_with_eff[11];
-	TH1D* mass_array_witheta[11];
-	TH1D* mass_aray_witheta_witheff[11];
+	TH1D *FA_tnpU[11];
+	TH1D *Eta_tnpU[11];
 
-	TH1D* same_sign_ratio[11];
-	TH1D* same_sign_ratio_with_eff[11];
-	TH1D* same_sign_ratio_witheta[11];
-	TH1D* same_sign_ratio_witheta_witheff[11];
+	TH1D *FA_tnpD[11];
+	TH1D *Eta_tnpD[11];
 
-	for (int i = 0; i < 11; i++){
-		mass_array_data[i] = (TH1D*) data_file->Get(Form("mass_array_data_%i",i));
-		mass_array_data_with_eff[i] = (TH1D*) data_file->Get(Form("mass_array_data_with_eff_%i",i));
-		mass_array_data_witheta[i] = (TH1D*) data_file->Get(Form("mass_array_data_witheta_%i",i));
-		mass_array_data_witheta_witheff[i] = (TH1D*) data_file->Get(Form("mass_array_data_witheta_witheff_%i",i));
+	// Data same sign
 
-		mass_array_data_same_sign[i] = (TH1D*) data_file->Get(Form("mass_array_data_same_sign_%i",i));
-		mass_array_data_same_sign_with_eff[i] = (TH1D*) data_file->Get(Form("mass_array_data_same_sign_with_eff_%i",i));
-		mass_array_data_same_sign_witheta[i] = (TH1D*) data_file->Get(Form("mass_array_data_same_sign_witheta_%i",i));
-		mass_array_data_same_sign_witheta_witheff[i] = (TH1D*) data_file->Get(Form("mass_array_data_same_sign_witheta_witheff_%i",i));
+	TH1D *FA_ss_nominal[11];
+	TH1D *Eta_ss_nominal[11];
 
-		mass_array[i] = (TH1D*) mc_file->Get(Form("mass_array_%i",i));
-		mass_array_with_eff[i] = (TH1D*) mc_file->Get(Form("mass_array_with_eff_%i",i));
-		mass_array_witheta[i] = (TH1D*) mc_file->Get(Form("mass_array_witheta_%i",i));
-		mass_aray_witheta_witheff[i] = (TH1D*) mc_file->Get(Form("mass_array_witheta_witheff_%i",i));
+	TH1D *FA_ss_AcoOff[11];
+	TH1D *Eta_ss_AcoOff[11];
 
-		same_sign_ratio[i] = new TH1D(Form("same_sign_ratio_%i",i),Form("same_sign_ratio_%i",i),120,60,120);
-		same_sign_ratio_with_eff[i] = new TH1D(Form("same_sign_ratio_with_eff_%i",i),Form("same_sign_ratio_with_eff_%i",i),120,60,120);
-		same_sign_ratio_witheta[i] = new TH1D(Form("same_sign_ratio_witheta_%i",i),Form("same_sign_ratio_witheta_%i",i),120,60,120);
-		same_sign_ratio_witheta_witheff[i] = new TH1D(Form("same_sign_ratio_witheta_witheff_%i",i),Form("same_sign_ratio_witheta_witheff_%i",i),120,60,120);
+	TH1D *FA_ss_tnpU[11];
+	TH1D *Eta_ss_tnpU[11];
+
+	TH1D *FA_ss_tnpD[11];
+	TH1D *Eta_ss_tnpD[11];
+
+	// MC signal
+	TH1D *FA_mc_nominal[11];
+	TH1D *Eta_mc_nominal[11];
+
+	TH1D *FA_mc_AcoOff[11];
+	TH1D *Eta_mc_AcoOff[11];
+
+	// Ratio
+	TH1D *h_ratio_FA_nominal[11];
+	TH1D *h_ratio_FA_tnpU[11];
+	TH1D *h_ratio_FA_tnpD[11];
+	TH1D *h_ratio_FA_acooff[11];
+
+	TH1D *h_ratio_Eta_nominal[11];
+	TH1D *h_ratio_Eta_tnpU[11];
+	TH1D *h_ratio_Eta_tnpD[11];
+	TH1D *h_ratio_Eta_acooff[11];
+
+	for (int i = 0; i < 11; i++)
+	{
+		FA_mc_nominal[i] = (TH1D *)mc_file->Get(Form("FA_nominal_%i", i));
+		Eta_mc_nominal[i] = (TH1D *)mc_file->Get(Form("Eta_nominal_%i", i));
+		FA_mc_AcoOff[i] = (TH1D *)mc_file->Get(Form("FA_AcoOff_%i", i));
+		Eta_mc_AcoOff[i] = (TH1D *)mc_file->Get(Form("Eta_AcoOff_%i", i));
+
+		FA_nominal[i] = (TH1D *)data_file->Get(Form("FA_nominal_%i", i));
+		Eta_nominal[i] = (TH1D *)data_file->Get(Form("Eta_nominal_%i", i));
+		FA_AcoOff[i] = (TH1D *)data_file->Get(Form("FA_AcoOff_%i", i));
+		Eta_AcoOff[i] = (TH1D *)data_file->Get(Form("Eta_AcoOff_%i", i));
+		FA_tnpU[i] = (TH1D *)data_file->Get(Form("FA_tnpU_%i", i));
+		Eta_tnpU[i] = (TH1D *)data_file->Get(Form("Eta_tnpU_%i", i));
+		FA_tnpD[i] = (TH1D *)data_file->Get(Form("FA_tnpD_%i", i));
+		Eta_tnpD[i] = (TH1D *)data_file->Get(Form("Eta_tnpD_%i", i));
+
+		FA_ss_nominal[i] = (TH1D *)data_file->Get(Form("FA_ss_nominal_%i", i));
+		Eta_ss_nominal[i] = (TH1D *)data_file->Get(Form("Eta_ss_nominal_%i", i));
+		FA_ss_AcoOff[i] = (TH1D *)data_file->Get(Form("FA_ss_AcoOff_%i", i));
+		Eta_ss_AcoOff[i] = (TH1D *)data_file->Get(Form("Eta_ss_AcoOff_%i", i));
+		FA_ss_tnpU[i] = (TH1D *)data_file->Get(Form("FA_ss_tnpU_%i", i));
+		Eta_ss_tnpU[i] = (TH1D *)data_file->Get(Form("Eta_ss_tnpU_%i", i));
+		FA_ss_tnpD[i] = (TH1D *)data_file->Get(Form("FA_ss_tnpD_%i", i));
+		Eta_ss_tnpD[i] = (TH1D *)data_file->Get(Form("Eta_ss_tnpD_%i", i));
+
+		h_ratio_FA_nominal[i] = new TH1D(Form("ratio_FA_nominal_%i", i), "", 120, 60, 120);
+		h_ratio_FA_tnpU[i] = new TH1D(Form("ratio_FA_tnpU_%i", i), "", 120, 60, 120);
+		h_ratio_FA_tnpD[i] = new TH1D(Form("ratio_FA_tnpD_%i", i), "", 120, 60, 120);
+		h_ratio_FA_acooff[i] = new TH1D(Form("ratio_FA_acooff_%i", i), "", 120, 60, 120);
+
+		h_ratio_Eta_nominal[i] = new TH1D(Form("ratio_Eta_nominal_%i", i), "", 120, 60, 120);
+		h_ratio_Eta_tnpU[i] = new TH1D(Form("ratio_Eta_tnpU_%i", i), "", 120, 60, 120);
+		h_ratio_Eta_tnpD[i] = new TH1D(Form("ratio_Eta_tnpD_%i", i), "", 120, 60, 120);
+		h_ratio_Eta_acooff[i] = new TH1D(Form("ratio_Eta_acooff_%i", i), "", 120, 60, 120);
 	}
 
-	for (int i = 0; i < 11; i++){
-		for (int j = 1; j<=120; j++){
+	for (int i = 0; i < 11; i++)
+	{
+		for (int j = 1; j <= 120; j++)
+		{
 
-			double content_mc_os = mass_array[i]->GetBinContent(j);
-			double content_data_ss = mass_array_data_same_sign[i]->GetBinContent(j);
-			double content_data_os = mass_array_data[i]->GetBinContent(j);
-			double ratio;
+			double content_mc_os_FA_nominal = FA_mc_nominal[i]->GetBinContent(j);
+			double content_data_os_FA_nominal = FA_nominal[i]->GetBinContent(j);
+			double content_data_ss_FA_nominal = FA_ss_nominal[i]->GetBinContent(j);
+			double ratio_FA_nominal;
 
-			double content_mc_os_witheff = mass_array_with_eff[i]->GetBinContent(j);
-			double content_data_ss_witheff = mass_array_data_same_sign_with_eff[i]->GetBinContent(j);
-			double content_data_os_witheff = mass_array_data_with_eff[i]->GetBinContent(j);
-			double ratio_witheff;
+			// double content_mc_os_FA_tnpU no such thing, used FA_mc_nominal
+			double content_data_os_FA_tnpU = FA_tnpU[i]->GetBinContent(j);
+			double content_data_ss_FA_tnpU = FA_ss_tnpU[i]->GetBinContent(j);
+			double ratio_FA_tnpU;
 
-			double content_mc_os_witheta = mass_array_witheta[i]->GetBinContent(j);
-			double content_data_ss_witheta = mass_array_data_same_sign_witheta[i]->GetBinContent(j);
-			double content_data_os_witheta = mass_array_data_witheta[i]->GetBinContent(j);
-			double ratio_witheta;
+			// double content_mc_os_FA_tnpD no such thing, used FA_mc_nominal
+			double content_data_os_FA_tnpD = FA_tnpD[i]->GetBinContent(j);
+			double content_data_ss_FA_tnpD = FA_ss_tnpD[i]->GetBinContent(j);
+			double ratio_FA_tnpD;
 
-			double content_mc_os_witheta_witheff = mass_aray_witheta_witheff[i]->GetBinContent(j);
-			double content_data_ss_witheta_witheff = mass_array_data_same_sign_witheta_witheff[i]->GetBinContent(j);
-			double content_data_os_witheta_witheff = mass_array_data_witheta_witheff[i]->GetBinContent(j);
-			double ratio_witheta_witheff;
+			double content_mc_os_FA_acooff = FA_mc_AcoOff[i]->GetBinContent(j);
+			double content_data_os_FA_acooff = FA_AcoOff[i]->GetBinContent(j);
+			double content_data_ss_FA_acooff = FA_ss_AcoOff[i]->GetBinContent(j);
+			double ratio_FA_acooff;
 
-			if (content_data_os >0 ) ratio = content_data_ss / content_data_os;
-			else ratio = 0;
-			if (content_data_os_witheff >0 ) ratio_witheff = content_data_ss_witheff / content_data_os_witheff;
-			else ratio_witheff = 0;
-			if (content_data_os_witheta >0 ) ratio_witheta = content_data_ss_witheta / content_data_os_witheta;
-			else ratio_witheta = 0;
-			if (content_data_os_witheta_witheff >0 ){
-				ratio_witheta_witheff = content_data_ss_witheta_witheff / content_data_os_witheta_witheff;
-				//cout << "We have content here" << endl;
+			if (content_data_os_FA_nominal > 0)
+			{
+				ratio_FA_nominal = content_data_ss_FA_nominal / content_data_os_FA_nominal;
+			}
+			else
+			{
+				ratio_FA_nominal = 0;
+			}
 
-			} 
-			else ratio_witheta_witheff = 0;
+			if (content_data_os_FA_tnpU > 0)
+			{
+				ratio_FA_tnpU = content_data_ss_FA_tnpU / content_data_os_FA_tnpU;
+			}
+			else
+			{
+				ratio_FA_tnpU = 0;
+			}
 
-			//if (i == 7) cout << "Ratio is " <<  ratio << endl;
-			double estimate_mc_ss = content_mc_os * ratio;
-			double estimate_mc_ss_witheff = content_mc_os_witheff * ratio_witheff;
-			double estimate_mc_ss_witheta = content_mc_os_witheta * ratio_witheta;
-			double estimate_mc_ss_witheta_witheff = content_mc_os_witheta_witheff * ratio_witheta_witheff;
+			if (content_data_os_FA_tnpD > 0)
+			{
+				ratio_FA_tnpD = content_data_ss_FA_tnpD / content_data_os_FA_tnpD;
+			}
+			else
+			{
+				ratio_FA_tnpD = 0;
+			}
 
+			if (content_data_os_FA_acooff > 0)
+			{
+				ratio_FA_acooff = content_data_ss_FA_acooff / content_data_os_FA_acooff;
+			}
+			else
+			{
+				ratio_FA_acooff = 0;
+			}
 
-			if (estimate_mc_ss >= 0 )same_sign_ratio[i]->SetBinContent(j,estimate_mc_ss);
-			if (estimate_mc_ss_witheff >= 0 )same_sign_ratio_with_eff[i]->SetBinContent(j,estimate_mc_ss_witheff);
-			if (estimate_mc_ss_witheta >= 0 )same_sign_ratio_witheta[i]->SetBinContent(j,estimate_mc_ss_witheta);
-			if (estimate_mc_ss_witheta_witheff >= 0 )same_sign_ratio_witheta_witheff[i]->SetBinContent(j,estimate_mc_ss_witheta_witheff);
-			
-			//if (i == 7) cout << "Bin content is " <<  estimate_mc_ss << endl;
+			double content_mc_os_Eta_nominal = Eta_mc_nominal[i]->GetBinContent(j);
+			double content_data_os_Eta_nominal = Eta_nominal[i]->GetBinContent(j);
+			double content_data_ss_Eta_nominal = Eta_ss_nominal[i]->GetBinContent(j);
+			double ratio_Eta_nominal;
+
+			// double content_mc_os_Eta_tnpU no such thing, used Eta_mc_nominal
+			double content_data_os_Eta_tnpU = Eta_tnpU[i]->GetBinContent(j);
+			double content_data_ss_Eta_tnpU = Eta_ss_tnpU[i]->GetBinContent(j);
+			double ratio_Eta_tnpU;
+
+			// double content_mc_os_Eta_tnpD no such thing, used Eta_mc_nominal
+			double content_data_os_Eta_tnpD = Eta_tnpD[i]->GetBinContent(j);
+			double content_data_ss_Eta_tnpD = Eta_ss_tnpD[i]->GetBinContent(j);
+			double ratio_Eta_tnpD;
+
+			double content_mc_os_Eta_acooff = Eta_mc_AcoOff[i]->GetBinContent(j);
+			double content_data_os_Eta_acooff = Eta_AcoOff[i]->GetBinContent(j);
+			double content_data_ss_Eta_acooff = Eta_ss_AcoOff[i]->GetBinContent(j);
+			double ratio_Eta_acooff;
+
+			if (content_data_os_Eta_nominal > 0)
+			{
+				ratio_Eta_nominal = content_data_ss_Eta_nominal / content_data_os_Eta_nominal;
+			}
+			else
+			{
+				ratio_Eta_nominal = 0;
+			}
+
+			if (content_data_os_Eta_tnpU > 0)
+			{
+				ratio_Eta_tnpU = content_data_ss_Eta_tnpU / content_data_os_Eta_tnpU;
+			}
+			else
+			{
+				ratio_Eta_tnpU = 0;
+			}
+
+			if (content_data_os_Eta_tnpD > 0)
+			{
+				ratio_Eta_tnpD = content_data_ss_Eta_tnpD / content_data_os_Eta_tnpD;
+			}
+			else
+			{
+				ratio_Eta_tnpD = 0;
+			}
+
+			if (content_data_os_Eta_acooff > 0)
+			{
+				ratio_Eta_acooff = content_data_ss_Eta_acooff / content_data_os_Eta_acooff;
+			}
+			else
+			{
+				ratio_Eta_acooff = 0;
+			}
+
+			double estimate_mc_ss_FA_nominal = content_mc_os_FA_nominal * ratio_FA_nominal;
+			double estimate_mc_ss_FA_tnpU = content_mc_os_FA_nominal * ratio_FA_tnpU;
+			double estimate_mc_ss_FA_tnpD = content_mc_os_FA_nominal * ratio_FA_tnpD;
+			double estimate_mc_ss_FA_acooff = content_mc_os_FA_acooff * ratio_FA_acooff;
+
+			double estimate_mc_ss_Eta_nominal = content_mc_os_Eta_nominal * ratio_Eta_nominal;
+			double estimate_mc_ss_Eta_tnpU = content_mc_os_Eta_nominal * ratio_Eta_tnpU;
+			double estimate_mc_ss_Eta_tnpD = content_mc_os_Eta_nominal * ratio_Eta_tnpD;
+			double estimate_mc_ss_Eta_acooff = content_mc_os_Eta_acooff * ratio_Eta_acooff;
+
+			if (estimate_mc_ss_FA_nominal >= 0)
+				h_ratio_FA_nominal[i]->SetBinContent(j, estimate_mc_ss_FA_nominal);
+			if (estimate_mc_ss_FA_tnpU >= 0)
+				h_ratio_FA_tnpU[i]->SetBinContent(j, estimate_mc_ss_FA_tnpU);
+			if (estimate_mc_ss_FA_tnpD >= 0)
+				h_ratio_FA_tnpD[i]->SetBinContent(j, estimate_mc_ss_FA_tnpD);
+			if (estimate_mc_ss_FA_acooff >= 0)
+				h_ratio_FA_acooff[i]->SetBinContent(j, estimate_mc_ss_FA_acooff);
+
+			if (estimate_mc_ss_Eta_nominal >= 0)
+				h_ratio_Eta_nominal[i]->SetBinContent(j, estimate_mc_ss_Eta_nominal);
+			if (estimate_mc_ss_Eta_tnpU >= 0)
+				h_ratio_Eta_tnpU[i]->SetBinContent(j, estimate_mc_ss_Eta_tnpU);
+			if (estimate_mc_ss_Eta_tnpD >= 0)
+				h_ratio_Eta_tnpD[i]->SetBinContent(j, estimate_mc_ss_Eta_tnpD);
+			if (estimate_mc_ss_Eta_acooff >= 0)
+				h_ratio_Eta_acooff[i]->SetBinContent(j, estimate_mc_ss_Eta_acooff);
+
+			// if (i == 7) cout << "Bin content is " <<  estimate_mc_ss << endl;
 		}
 	}
+
 	mc_file->cd();
-	for (int i=0; i<11; i++){
-		same_sign_ratio[i]->Write(Form("mc_estimate_ss_%i",i),2);
-		same_sign_ratio_with_eff[i]->Write(Form("mc_estimate_ss_with_eff_%i",i),2);
-		same_sign_ratio_witheta[i]->Write(Form("mc_estimate_ss_witheta_%i",i),2);
-		same_sign_ratio_witheta_witheff[i]->Write(Form("mc_estimate_ss_witheta_witheff_%i",i),2);
+	for (int i = 0; i < 11; i++)
+	{
+		h_ratio_FA_nominal[i]->Write(Form("samesign_FA_nominal_%i", i), 2);
+		h_ratio_FA_tnpU[i]->Write(Form("samesign_FA_tnpU_%i", i), 2);
+		h_ratio_FA_tnpD[i]->Write(Form("samesign_FA_tnpD_%i", i), 2);
+		h_ratio_FA_acooff[i]->Write(Form("samesign_FA_acooff_%i", i), 2);
+
+		h_ratio_Eta_nominal[i]->Write(Form("samesign_Eta_nominal_%i", i), 2);
+		h_ratio_Eta_tnpU[i]->Write(Form("samesign_Eta_tnpU_%i", i), 2);
+		h_ratio_Eta_tnpD[i]->Write(Form("samesign_Eta_tnpD_%i", i), 2);
+		h_ratio_Eta_acooff[i]->Write(Form("samesign_Eta_acooff_%i", i), 2);
 
 	}
 	mc_file->Close();
 	data_file->Close();
-
 }

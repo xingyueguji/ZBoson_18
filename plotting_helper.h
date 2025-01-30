@@ -27,10 +27,11 @@ public:
   void areanormalize(TH1D *h_1);
   void areanormalize_TH1(TH1 *h_1);
   void luminormalize(TH1D *h_1, int opt, double weight);
-  void compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, TH1D *h_5, TH1D *h_6, int x, int opt);
+  void compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, TH1D *h_5, TH1D *h_6, int x, int opt, bool isEta);
   void acoplot(TH1D *h_1, TH1D *h_2, int x, bool rapiditycut);
   void savehistogram(TH1D *h_1, TH1D *h_2, TH1D *h_3, int x, TFile *f1);
   void setTDRStyle();
+  void fixnegativebin(TH1D *h_1);
 
   double ttbar_XS = 69.0;
   double Wjet_XS = 21159;
@@ -74,7 +75,7 @@ void plotting_helper::luminormalize(TH1D *h_1, int opt, double weight)
     h_1->Scale(ttbar_XS * crossSectionModifier / weight);
 }
 
-void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, TH1D *h_5, TH1D *h_6, int x, int opt)
+void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, TH1D *h_5, TH1D *h_6, int x, int opt, bool isEta)
 {
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -122,7 +123,7 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
   legend->SetTextSize(0.03);
   legend->SetTextFont(42);
   legend->SetFillColorAlpha(kWhite, 0);
-  legend->AddEntry(h_1, Form("Data-EM (%i-%i%)", cenlowlimit[x], cenhighlimit[x]), "p");
+  legend->AddEntry(h_1, Form("Data-EM (%i-%i%%)", cenlowlimit[x], cenhighlimit[x]), "p");
   legend->AddEntry(h_2, "Z \\rightarrow \\mu^{+} \\mu^{-}", "f");
   legend->AddEntry(h_3, "Same_sign(QCD)", "f");
   legend->AddEntry(h_4, "Z \\rightarrow \\tau^{+} \\tau^{-}", "f");
@@ -140,11 +141,13 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
   s1->Add(h_3, "HIST");
   s1->Add(h_2, "HIST");
   s1->Draw();
+  s1->Draw("TEXTSAME");
   s1->GetXaxis()->SetTitle("m_{#mu^{+}#mu^{-}} (GeV)");
   s1->GetXaxis()->CenterTitle();
   s1->GetYaxis()->SetTitle("Events / 4.0 GeV");
   s1->GetYaxis()->CenterTitle();
   h_1->Draw("SAME");
+  h_1->Draw("SAMETEXT");
   legend->Draw("SAME");
 
   TLatex runinfo;
@@ -164,18 +167,28 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
   logoextra.SetTextSize(0.04);
   logoextra.SetTextFont(52);
   // logoextra.DrawLatex(0.2,0.83,"Preliminary");
-  if (opt == 1)
-    c1->SaveAs(Form("./newcomposite/raw/composite_%i.pdf", x));
-  if (opt == 2)
-    c1->SaveAs(Form("./newcomposite/y/composite_%i.pdf", x));
-  if (opt == 3)
-    c1->SaveAs(Form("./newcomposite/eff/composite_%i.pdf", x));
-  if (opt == 4)
-    c1->SaveAs(Form("./newcomposite/y_eff/composite_%i.pdf", x));
-  if (opt == 5)
-    c1->SaveAs(Form("./newcomposite/eta/composite_%i.pdf", x));
-  if (opt == 6)
-    c1->SaveAs(Form("./newcomposite/eta_eff/composite_%i.pdf", x));
+  if (isEta)
+  {
+    if (opt == 1)
+      c1->SaveAs(Form("./newcomposite/eta/nominal/composite_%i.pdf", x));
+    if (opt == 2)
+      c1->SaveAs(Form("./newcomposite/eta/tnpU/composite_%i.pdf", x));
+    if (opt == 3)
+      c1->SaveAs(Form("./newcomposite/eta/tnpD/composite_%i.pdf", x));
+    if (opt == 4)
+      c1->SaveAs(Form("./newcomposite/eta/acooff/composite_%i.pdf", x));
+  }
+  if (!isEta)
+  {
+    if (opt == 1)
+      c1->SaveAs(Form("./newcomposite/FA/nominal/composite_%i.pdf", x));
+    if (opt == 2)
+      c1->SaveAs(Form("./newcomposite/FA/tnpU/composite_%i.pdf", x));
+    if (opt == 3)
+      c1->SaveAs(Form("./newcomposite/FA/tnpD/composite_%i.pdf", x));
+    if (opt == 4)
+      c1->SaveAs(Form("./newcomposite/FA/acooff/composite_%i.pdf", x));
+  }
 }
 void plotting_helper::acoplot(TH1D *h_1, TH1D *h_2, int x, bool rapiditycut)
 {
@@ -351,4 +364,18 @@ void plotting_helper::setTDRStyle()
   tdrStyle->SetHatchesSpacing(0.05);
 
   tdrStyle->cd();
+}
+
+void plotting_helper::fixnegativebin(TH1D *h1)
+{
+  for (int bin = 1; bin <= h1->GetNbinsX(); ++bin)
+  {
+    double binContent = h1->GetBinContent(bin);
+    if (binContent < 0)
+    {
+      // cout << "Fixing" << endl;
+      h1->SetBinContent(bin, 0);
+      h1->SetBinError(bin, 0);
+    }
+  }
 }

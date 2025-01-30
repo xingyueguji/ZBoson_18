@@ -47,15 +47,24 @@ void get_mc_eff()
 	TH2D *recoEff_D_pass[centarraysize];
 	TH2D *recoEff_D[centarraysize];
 
+	TH2D *recoEff_noAco_pass[centarraysize];
+	TH2D *recoEff_noAco[centarraysize];
+
 	TH2D *recoEff_pass_noSF[centarraysize];
 	TH2D *recoEff_all_noSF[centarraysize];
 	TH2D *recoEff_noSF[centarraysize];
 
-	TEfficiency *eff[11];
-	TEfficiency *eff_noSF[11];
+	TH2D *recoEff_pass_noSF_noAco[centarraysize];
+	TH2D *recoEff_noSF_noAco[centarraysize];
 
-	TEfficiency *eff_U[11];
-	TEfficiency *eff_D[11];
+	TEfficiency *eff[centarraysize];
+	TEfficiency *eff_noSF[centarraysize];
+
+	TEfficiency *eff_U[centarraysize];
+	TEfficiency *eff_D[centarraysize];
+
+	TEfficiency *eff_noAco[centarraysize];
+	TEfficiency *eff_noSF_noAco[centarraysize];
 
 	const int nrapiditybins = 16;
 	const int nptbins = 9;
@@ -71,6 +80,9 @@ void get_mc_eff()
 
 		recoEff_U_pass[i] = new TH2D(Form("recoEff_U_pass_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]), "", nrapiditybins, -2.4, 2.4, nptbins - 1, ptbin);
 		recoEff_D_pass[i] = new TH2D(Form("recoEff_D_pass_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]), "", nrapiditybins, -2.4, 2.4, nptbins - 1, ptbin);
+
+		recoEff_noAco_pass[i] = new TH2D(Form("recoEff_noAco_pass_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]), "", nrapiditybins, -2.4, 2.4, nptbins - 1, ptbin);
+		recoEff_pass_noSF_noAco[i] = new TH2D(Form("recoEff_pass_noSF_noAco_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]), "", nrapiditybins, -2.4, 2.4, nptbins - 1, ptbin);
 
 		// recoEff[i] = new TH2D(Form("recoEff_%i_%i",mc_signal_obj->cenlowlimit[i],mc_signal_obj->cenhighlimit[i]),"",nrapiditybins,-2.4,2.4,nptbins,ptbin);
 	}
@@ -204,6 +216,8 @@ void get_mc_eff()
 							recoEff_D_pass[k]->Fill(mc_signal_obj->y_gen[j], mc_signal_obj->pT_gen[j], eventweight * scaleFactorD);
 							recoEff_pass_noSF[k]->Fill(mc_signal_obj->y_gen[j], mc_signal_obj->pT_gen[j], eventweight);
 						}
+						recoEff_noAco_pass[k]->Fill(mc_signal_obj->y_gen[j], mc_signal_obj->pT_gen[j], eventweight * scaleFactor);
+						recoEff_pass_noSF_noAco[k]->Fill(mc_signal_obj->y_gen[j], mc_signal_obj->pT_gen[j], eventweight);
 					}
 				}
 			}
@@ -215,18 +229,24 @@ void get_mc_eff()
 		cout << "Now checking the consistency of histogram" << " " << i << endl;
 		mc_signal_obj->forceConsistency(recoEff_pass[i], recoEff_all[i]);
 		mc_signal_obj->forceConsistency(recoEff_pass_noSF[i], recoEff_all_noSF[i]);
+		mc_signal_obj->forceConsistency(recoEff_pass_noSF_noAco[i], recoEff_all_noSF[i]);
 		mc_signal_obj->forceConsistency(recoEff_U_pass[i], recoEff_all[i]);
 		mc_signal_obj->forceConsistency(recoEff_D_pass[i], recoEff_all[i]);
+		mc_signal_obj->forceConsistency(recoEff_noAco_pass[i], recoEff_all[i]);
 
 		recoEff[i] = (TH2D *)recoEff_pass[i]->Clone(Form("recoEff_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
 		recoEff_noSF[i] = (TH2D *)recoEff_pass_noSF[i]->Clone(Form("recoEff_noSF_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
 		recoEff_U[i] = (TH2D *)recoEff_U_pass[i]->Clone(Form("recoEff_U_pass_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
 		recoEff_D[i] = (TH2D *)recoEff_D_pass[i]->Clone(Form("recoEff_D_pass_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
+		recoEff_noAco[i] = (TH2D *)recoEff_noAco_pass[i]->Clone(Form("recoEff_noAco_pass_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
+		recoEff_noSF_noAco[i] = (TH2D *)recoEff_pass_noSF_noAco[i]->Clone(Form("recoEff_pass_noSF_noAco_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
 
 		recoEff[i]->Divide(recoEff_all[i]);
 		recoEff_noSF[i]->Divide(recoEff_all_noSF[i]);
 		recoEff_U[i]->Divide(recoEff_all[i]);
 		recoEff_D[i]->Divide(recoEff_all[i]);
+		recoEff_noAco[i]->Divide(recoEff_all[i]);
+		recoEff_noSF_noAco[i]->Divide(recoEff_all_noSF[i]);
 
 		if (TEfficiency::CheckConsistency(*(recoEff_pass[i]), *(recoEff_all[i]), "w"))
 		{
@@ -256,6 +276,19 @@ void get_mc_eff()
 			eff_D[i]->SetName(Form("eff_D_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
 		}
 
+		if (TEfficiency::CheckConsistency(*(recoEff_noAco_pass[i]), *(recoEff_all[i]), "w"))
+		{
+			eff_noAco[i] = new TEfficiency(*(recoEff_noAco_pass[i]), *(recoEff_all[i]));
+			eff_noAco[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+			eff_noAco[i]->SetName(Form("eff_noAco_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
+		}
+
+		if (TEfficiency::CheckConsistency(*(recoEff_pass_noSF_noAco[i]), *(recoEff_all_noSF[i]), "w"))
+		{
+			eff_noSF_noAco[i] = new TEfficiency(*(recoEff_pass_noSF_noAco[i]), *(recoEff_all_noSF[i]));
+			eff_noSF_noAco[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+			eff_noSF_noAco[i]->SetName(Form("eff_noSF_noAco_%i_%i", mc_signal_obj->cenlowlimit[i], mc_signal_obj->cenhighlimit[i]));
+		}
 	}
 
 	TFile *f1 = new TFile("./rootfile/mc_eff.root", "UPDATE");
@@ -275,9 +308,17 @@ void get_mc_eff()
 		recoEff_U[i]->Write("", 2);
 		recoEff_D[i]->Write("", 2);
 
+		recoEff_noAco_pass[i]->Write("", 2);
+		recoEff_noAco[i]->Write("", 2);
+
+		recoEff_pass_noSF_noAco[i]->Write("", 2);
+		recoEff_noSF_noAco[i]->Write("", 2);
+
 		eff[i]->Write("", 2);
 		eff_noSF[i]->Write("", 2);
 		eff_U[i]->Write("", 2);
 		eff_D[i]->Write("", 2);
+		eff_noAco[i]->Write("", 2);
+		eff_noSF_noAco[i]->Write("", 2);
 	}
 }

@@ -24,7 +24,7 @@
 void get_data()
 {
 	TH1::SetDefaultSumw2();
-	gSystem->Load("./libDict.so");
+	gSystem->Load("./header/libDict.so");
 
 	MC_18 *data = new MC_18();
 	MC_18 *data_same_sign = new MC_18();
@@ -39,80 +39,62 @@ void get_data()
 	MuonTnP *tnp = new MuonTnP();
 
 	TEfficiency *e[11];
+	TEfficiency *e_up[11];
+	TEfficiency *e_down[11];
+	TEfficiency *e_acooff[11];
 
 	TFile *eff_f1 = new TFile("./rootfile/mc_eff.root", "READ");
 	for (int i = 0; i < 11; i++)
 	{
 		e[i] = (TEfficiency *)eff_f1->Get(Form("eff_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
+		e_up[i] = (TEfficiency *)eff_f1->Get(Form("eff_U_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
+		e_down[i] = (TEfficiency *)eff_f1->Get(Form("eff_D_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
+		e_acooff[i] = (TEfficiency *)eff_f1->Get(Form("eff_noAco_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
 	}
 
-	// TH1D *data_A[11];
-	TH1D *mass_array_data[11];
-	TH1D *mass_array_data_withy[11];
-	TH1D *mass_array_data_witheta[11];
-	TH1D *mass_array_data_with_eff[11];
-	TH1D *mass_array_data_withy_witheff[11];
-	TH1D *mass_array_data_witheta_witheff[11];
+	TH1D *FA_nominal[11];
+	TH1D *Eta_nominal[11];
 
-	TH1D *mass_array_data_same_sign[11];
-	TH1D *mass_array_data_same_sign_withy[11];
-	TH1D *mass_array_data_same_sign_witheta[11];
-	TH1D *mass_array_data_same_sign_with_eff[11];
-	TH1D *mass_array_data_same_sign_withy_witheff[11];
-	TH1D *mass_array_data_same_sign_witheta_witheff[11];
+	TH1D *FA_AcoOff[11];
+	TH1D *Eta_AcoOff[11];
 
-	TH1D *y_without_cut;
-	TH1D *y_with_cut;
+	TH1D *FA_tnpU[11];
+	TH1D *Eta_tnpU[11];
 
-	TH1D *h_cent = new TH1D("h_cent", "h_cent", 100, 0, 200);
+	TH1D *FA_tnpD[11];
+	TH1D *Eta_tnpD[11];
 
-	TH1D *h_Z_pt = new TH1D("h_Z_pt", "h_Z_pt", 300, 0, 300);
-	TH1D *h_Z_pt_eta = new TH1D("h_Z_pt_eta", "h_Z_pt_eta", 300, 0, 300);
+	TH1D *FA_ss_nominal[11];
+	TH1D *Eta_ss_nominal[11];
 
-	y_with_cut = new TH1D("y_with_cut", "Z_rapidity_with_cut", 100, -3, 3);
-	y_without_cut = new TH1D("y_without_cut", "Z_rapidity_without_cut", 100, -3, 3);
+	TH1D *FA_ss_AcoOff[11];
+	TH1D *Eta_ss_AcoOff[11];
 
-	// TH1D *h_pesudorapidity = new TH1D("pesudorapidity","",100,-10,10);
-	// TH1F *h_rapidity = new TH1F("rapidity","",16,-2.4,2.4);
+	TH1D *FA_ss_tnpU[11];
+	TH1D *Eta_ss_tnpU[11];
+
+	TH1D *FA_ss_tnpD[11];
+	TH1D *Eta_ss_tnpD[11];
 
 	for (int i = 0; i < data->centarraysize; i++)
 	{
-		mass_array_data[i] = new TH1D(Form("mass_array_data_%i", i), Form("mass_data_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_withy[i] = new TH1D(Form("mass_array_data_withy_%i", i), Form("mass_data_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_with_eff[i] = new TH1D(Form("mass_array_data_with_eff_%i", i), Form("mass_data_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_withy_witheff[i] = new TH1D(Form("mass_array_data_withy_witheff_%i", i), Form("mass_data_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_witheta[i] = new TH1D(Form("mass_array_data_witheta_%i", i), Form("mass_data_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_witheta_witheff[i] = new TH1D(Form("mass_array_data_witheta_witheff_%i", i), Form("mass_data_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]), 120, 60, 120);
+		FA_nominal[i] = new TH1D(Form("FA_nominal_%i", i), "", 120, 60, 120);
+		Eta_nominal[i] = new TH1D(Form("Eta_nominal_%i", i), "", 120, 60, 120);
+		FA_AcoOff[i] = new TH1D(Form("FA_AcoOff_%i", i), "", 120, 60, 120);
+		Eta_AcoOff[i] = new TH1D(Form("Eta_AcoOff_%i", i), "", 120, 60, 120);
+		FA_tnpU[i] = new TH1D(Form("FA_tnpU_%i", i), "", 120, 60, 120);
+		Eta_tnpU[i] = new TH1D(Form("Eta_tnpU_%i", i), "", 120, 60, 120);
+		FA_tnpD[i] = new TH1D(Form("FA_tnpD_%i", i), "", 120, 60, 120);
+		Eta_tnpD[i] = new TH1D(Form("Eta_tnpD_%i", i), "", 120, 60, 120);
 
-		mass_array_data_same_sign[i] = new TH1D(Form("mass_array_data_same_sign_%i", i), Form("mass_data_same_sign_%i_%i", data_same_sign->cenlowlimit[i], data_same_sign->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_same_sign_withy[i] = new TH1D(Form("mass_array_data_same_sign_withy_%i", i), Form("mass_data_same_sign_%i_%i", data_same_sign->cenlowlimit[i], data_same_sign->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_same_sign_with_eff[i] = new TH1D(Form("mass_array_data_same_sign_with_eff_%i", i), Form("mass_data_same_sign_%i_%i", data_same_sign->cenlowlimit[i], data_same_sign->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_same_sign_withy_witheff[i] = new TH1D(Form("mass_array_data_same_sign_withy_witheff_%i", i), Form("mass_data_same_sign_%i_%i", data_same_sign->cenlowlimit[i], data_same_sign->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_same_sign_witheta[i] = new TH1D(Form("mass_array_data_same_sign_witheta_%i", i), Form("mass_data_same_sign_%i_%i", data_same_sign->cenlowlimit[i], data_same_sign->cenhighlimit[i]), 120, 60, 120);
-		mass_array_data_same_sign_witheta_witheff[i] = new TH1D(Form("mass_array_data_same_sign_witheta_witheff_%i", i), Form("mass_data_same_sign_%i_%i", data_same_sign->cenlowlimit[i], data_same_sign->cenhighlimit[i]), 120, 60, 120);
-	}
-
-	// Place for the new unbinned dataset:
-	RooRealVar *roomass[11];
-	RooDataSet *roodata[11];
-	RooDataSet *roodata_y[11];
-	RooDataSet *roodata_eff[11];
-	RooDataSet *roodata_y_eff[11];
-	RooDataSet *roodata_eta[11];
-	RooDataSet *roodata_eta_eff[11];
-	RooDataSet *roodata_raw_uniform[11];
-
-	for (int i = 0; i < data->centarraysize; i++)
-	{
-		roomass[i] = new RooRealVar("roomass", "roomass", 60, 120);
-		roomass[i]->setBinning(RooBinning(10000, 60, 120));
-		roodata[i] = new RooDataSet(Form("roodata_%i", i), Form("roodata_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		roodata_y[i] = new RooDataSet(Form("roodata_y_%i", i), Form("roodata_y_%i", i), RooArgSet(*roomass[i]));
-		roodata_eff[i] = new RooDataSet(Form("roodata_eff_%i", i), Form("roodata_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		roodata_y_eff[i] = new RooDataSet(Form("roodata_y_eff_%i", i), Form("roodata_y_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		roodata_eta[i] = new RooDataSet(Form("roodata_eta_%i", i), Form("roodata_eta_%i", i), RooArgSet(*roomass[i]));
-		roodata_eta_eff[i] = new RooDataSet(Form("roodata_eta_eff_%i", i), Form("roodata_eta_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		roodata_raw_uniform[i] = new RooDataSet(Form("roodata_raw_uniform_%i", i), Form("roodata_raw_uniform_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
+		FA_ss_nominal[i] = new TH1D(Form("FA_ss_nominal_%i", i), "", 120, 60, 120);
+		Eta_ss_nominal[i] = new TH1D(Form("Eta_ss_nominal_%i", i), "", 120, 60, 120);
+		FA_ss_AcoOff[i] = new TH1D(Form("FA_ss_AcoOff_%i", i), "", 120, 60, 120);
+		Eta_ss_AcoOff[i] = new TH1D(Form("Eta_ss_AcoOff_%i", i), "", 120, 60, 120);
+		FA_ss_tnpU[i] = new TH1D(Form("FA_ss_tnpU_%i", i), "", 120, 60, 120);
+		Eta_ss_tnpU[i] = new TH1D(Form("Eta_ss_tnpU_%i", i), "", 120, 60, 120);
+		FA_ss_tnpD[i] = new TH1D(Form("FA_ss_tnpD_%i", i), "", 120, 60, 120);
+		Eta_ss_tnpD[i] = new TH1D(Form("Eta_ss_tnpD_%i", i), "", 120, 60, 120);
 	}
 
 	int nentries = data->t1->GetEntries();
@@ -178,56 +160,39 @@ void get_data()
 			if (data->pT[j] < 1.25 && acoplanarity < 0.001)
 				passesAco[0] = false;
 
-			h_cent->Fill(hiBin);
-
-			// This is the place for eta cut check:
-
-			y_without_cut->Fill(data->y[j]);
-			if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
-			{
-				if (abs(data->y[j]) > 1)
-					cout << "Warning Z has y > 1 with eta cut < 1 on both" << endl;
-				y_with_cut->Fill(data->y[j]);
-				h_Z_pt_eta->Fill(data->pT[j]);
-			}
-			h_Z_pt->Fill(data->pT[j]);
-
 			for (int k = 0; k < data->centarraysize; k++)
 			{
 				if (centbinpositioncounter[k] != 0)
 				{
-					// with y cut
 					if (passesAco[0])
 					{
-						if (abs(data->y[j]) < 1)
-						{
-							double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-							mass_array_data_withy[k]->Fill(data->mass[j]);
-							mass_array_data_withy_witheff[k]->Fill(data->mass[j], 1.0 / efficiency);
-							roomass[k]->setVal(data->mass[j]);
-							roodata_y[k]->add(RooArgSet(*roomass[k]));
-							roodata_y_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency);
-						}
+						double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
+						double efficiency_up = data->getEfficiency(e_up[k], data->y[j], data->pT[j]);
+						double efficiency_down = data->getEfficiency(e_down[k], data->y[j], data->pT[j]);
+
+						FA_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
+						FA_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
+						FA_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
+
 						// with eta cut < 1 on both D1 and D2 muons
 						if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
 						{
 							double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-							mass_array_data_witheta[k]->Fill(data->mass[j]);
-							mass_array_data_witheta_witheff[k]->Fill(data->mass[j], 1.0 / efficiency);
-							roomass[k]->setVal(data->mass[j]);
-							roodata_eta[k]->add(RooArgSet(*roomass[k]));
-							roodata_eta_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency);
+							double efficiency_up = data->getEfficiency(e_up[k], data->y[j], data->pT[j]);
+							double efficiency_down = data->getEfficiency(e_down[k], data->y[j], data->pT[j]);
+							Eta_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
+							Eta_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
+							Eta_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
 						}
-						// without y cut
-						double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-						mass_array_data[k]->Fill(data->mass[j]);
-						mass_array_data_with_eff[k]->Fill(data->mass[j], 1.0 / efficiency);
+					}
 
-						// This is the raw one: test validity of unbin fit
-						roomass[k]->setVal(data->mass[j]);
-						roodata[k]->add(RooArgSet(*roomass[k]));
-						roodata_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency);
-						roodata_raw_uniform[k]->add(RooArgSet(*roomass[k]), 1);
+					double efficiency_acooff = data->getEfficiency(e_acooff[k], data->y[j], data->pT[j]);
+					FA_AcoOff[k]->Fill(data->mass[j], 1.0 / efficiency_acooff);
+
+					if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
+					{
+						double efficiency_acooff = data->getEfficiency(e_acooff[k], data->y[j], data->pT[j]);
+						Eta_AcoOff[k]->Fill(data->mass[j], 1.0 / efficiency_acooff);
 					}
 				}
 			}
@@ -298,26 +263,35 @@ void get_data()
 			{
 				if (centbinpositioncounter[k] != 0)
 				{
-					// with y cut
 					if (passesAco[0])
 					{
-						if (abs(data_same_sign->y[j]) < 1)
-						{
-							double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
-							mass_array_data_same_sign_withy[k]->Fill(data_same_sign->mass[j]);
-							mass_array_data_same_sign_withy_witheff[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
-						}
-						// with eta cut
+						double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
+						double efficiency_up = data_same_sign->getEfficiency(e_up[k], data_same_sign->y[j], data_same_sign->pT[j]);
+						double efficiency_down = data_same_sign->getEfficiency(e_down[k], data_same_sign->y[j], data_same_sign->pT[j]);
+
+						FA_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+						FA_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
+						FA_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
+
+						// with eta cut < 1 on both D1 and D2 muons
 						if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
 						{
 							double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
-							mass_array_data_same_sign_witheta[k]->Fill(data_same_sign->mass[j]);
-							mass_array_data_same_sign_witheta_witheff[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+							double efficiency_up = data_same_sign->getEfficiency(e_up[k], data_same_sign->y[j], data_same_sign->pT[j]);
+							double efficiency_down = data_same_sign->getEfficiency(e_down[k], data_same_sign->y[j], data_same_sign->pT[j]);
+							Eta_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+							Eta_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
+							Eta_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
 						}
-						// without y cut
-						double efficiency = data_same_sign->getEfficiency(e[k], data->y[j], data->pT[j]);
-						mass_array_data_same_sign[k]->Fill(data_same_sign->mass[j]);
-						mass_array_data_same_sign_with_eff[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+					}
+
+					double efficiency_acooff = data_same_sign->getEfficiency(e_acooff[k], data_same_sign->y[j], data_same_sign->pT[j]);
+					FA_ss_AcoOff[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_acooff);
+
+					if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
+					{
+						double efficiency_acooff = data_same_sign->getEfficiency(e_acooff[k], data_same_sign->y[j], data_same_sign->pT[j]);
+						Eta_ss_AcoOff[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_acooff);
 					}
 				}
 			}
@@ -329,48 +303,24 @@ void get_data()
 	histogram_file->cd();
 	for (int i = 0; i < data->centarraysize; i++)
 	{
-		mass_array_data_same_sign_withy[i]->Write("", 2);
-		mass_array_data_same_sign_withy_witheff[i]->Write("", 2);
-		mass_array_data_same_sign[i]->Write("", 2);
-		mass_array_data_same_sign_with_eff[i]->Write("", 2);
-		mass_array_data_same_sign_witheta[i]->Write("", 2);
-		mass_array_data_same_sign_witheta_witheff[i]->Write("", 2);
+		FA_nominal[i]->Write("", 2);
+		Eta_nominal[i]->Write("", 2);
+		FA_AcoOff[i]->Write("", 2);
+		Eta_AcoOff[i]->Write("", 2);
+		FA_tnpU[i]->Write("", 2);
+		Eta_tnpU[i]->Write("", 2);
+		FA_tnpD[i]->Write("", 2);
+		Eta_tnpD[i]->Write("", 2);
 
-		mass_array_data_withy[i]->Write("", 2);
-		mass_array_data_withy_witheff[i]->Write("", 2);
-		mass_array_data[i]->Write("", 2);
-		mass_array_data_with_eff[i]->Write("", 2);
-		mass_array_data_witheta[i]->Write("", 2);
-		mass_array_data_witheta_witheff[i]->Write("", 2);
-
-		roodata[i]->Write("", 2);
-		roodata_y[i]->Write("", 2);
-		roodata_y_eff[i]->Write("", 2);
-		roodata_eta[i]->Write("", 2);
-		roodata_eta_eff[i]->Write("", 2);
-		roodata_eff[i]->Write("", 2);
-		roodata_raw_uniform[i]->Write("", 2);
+		FA_ss_nominal[i]->Write("", 2);
+		Eta_ss_nominal[i]->Write("", 2);
+		FA_ss_AcoOff[i]->Write("", 2);
+		Eta_ss_AcoOff[i]->Write("", 2);
+		FA_ss_tnpU[i]->Write("", 2);
+		Eta_ss_tnpU[i]->Write("", 2);
+		FA_ss_tnpD[i]->Write("", 2);
+		Eta_ss_tnpD[i]->Write("", 2);
 	}
-
-	TCanvas *c1 = new TCanvas("", "", 1200, 600);
-	c1->Divide(2, 2);
-	// c1->SetLogy(1);
-	c1->cd(1);
-	h_Z_pt_eta->Draw("hist");
-	c1->cd(2);
-	h_Z_pt->Draw("hist");
-	c1->cd(3);
-	y_with_cut->Draw("hist");
-	c1->cd(4);
-	y_without_cut->Draw("hist");
-
-	TCanvas *c2 = new TCanvas("", "", 1200, 600);
-
-	c2->cd();
-	h_cent->Draw();
-
-	c1->SaveAs("./etacheck/data_pt.pdf");
-	c2->SaveAs("./etacheck/cent.pdf");
 
 	histogram_file->Close();
 	data->f1->Close();

@@ -1,74 +1,115 @@
 #include "plotting_helper.h"
-void plot_normalize(int opt = 1)
+void plot_normalize(int opt = 4)
 {
-	// opt == 1 raw
-	// opt == 3 eff
-	// opt == 5 etacut
-	// opt == 6 eta + eff
+	// opt == 1 nominal
+	// opt == 2 tnpU
+	// opt == 3 tnpD
+	// opt == 4 Acooff
+
+	// now raw and eta are saved into same file, only differ by version
 
 	TFile *mc_signal;
 	TFile *data_file;
 	TFile *mc_tt;
 	TFile *mc_w;
 
-	mc_signal = new TFile("./rootfile/mc_signal.root", "UPDATE");
-	data_file = new TFile("./rootfile/data_file.root", "UPDATE");
-	mc_tt = new TFile("./rootfile/mc_tt.root", "UPDATE");
-	mc_w = new TFile("./rootfile/mc_w.root", "UPDATE");
+	mc_signal = new TFile("./rootfile/mc_signal.root", "READ");
+	data_file = new TFile("./rootfile/data_file.root", "READ");
+	mc_tt = new TFile("./rootfile/mc_tt.root", "READ");
+	mc_w = new TFile("./rootfile/mc_w.root", "READ");
 
-	TFile *rawnormalized = new TFile("./rootfile/normalized/rawfile.root", "UPDATE");
-	TFile *effnormalized = new TFile("./rootfile/normalized/efffile.root", "UPDATE");
-	TFile *etacutnormalized = new TFile("./rootfile/normalized/etacut_file.root", "UPDATE");
-	TFile *etacut_effnormalized = new TFile("./rootfile/normalized/etacut_eff_file.root", "UPDATE");
+	TFile *f_FA_nominal = new TFile("./rootfile/normalized/FA_nominal.root", "UPDATE");
+	TFile *f_FA_tnpU = new TFile("./rootfile/normalized/FA_tnpU.root", "UPDATE");
+	TFile *f_FA_tnpD = new TFile("./rootfile/normalized/FA_tnpD.root", "UPDATE");
+	TFile *f_FA_Acooff = new TFile("./rootfile/normalized/FA_acooff.root", "UPDATE");
 
-	TH1D *mass_array_W[11];
-	TH1D *mass_array_tt[11];
-	TH1D *mass_array_tau[11];
-	TH1D *mass_array_signal[11];
-	TH1D *mass_array_data[11];
-	TH1D *mass_array_samesign[11];
+	TFile *f_Eta_nominal = new TFile("./rootfile/normalized/Eta_nominal.root", "UPDATE");
+	TFile *f_Eta_tnpU = new TFile("./rootfile/normalized/Eta_tnpU.root", "UPDATE");
+	TFile *f_Eta_tnpD = new TFile("./rootfile/normalized/Eta_tnpD.root", "UPDATE");
+	TFile *f_Eta_Acooff = new TFile("./rootfile/normalized/Eta_acooff.root", "UPDATE");
+
+	TH1D *h_FA_mcsignal[11];
+	TH1D *h_FA_mcW[11];
+	TH1D *h_FA_mctt[11];
+	TH1D *h_FA_mctau[11];
+	TH1D *h_FA_data[11];
+	TH1D *h_FA_samesign[11];
+
+	TH1D *h_Eta_mcsignal[11];
+	TH1D *h_Eta_mcW[11];
+	TH1D *h_Eta_mctt[11];
+	TH1D *h_Eta_mctau[11];
+	TH1D *h_Eta_data[11];
+	TH1D *h_Eta_samesign[11];
 
 	for (int i = 0; i < 11; i++)
 	{
 		if (opt == 1)
 		{
+			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_nominal_%i", i));
+			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_nominal_%i", i));
+			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_nominal_%i", i));
+			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_nominal_%i", i));
+			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_nominal_%i", i));
+			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_nominal_%i", i));
 
-			mass_array_W[i] = (TH1D *)mc_w->Get(Form("mass_array_%i", i));
-			mass_array_tt[i] = (TH1D *)mc_tt->Get(Form("mass_array_%i", i));
-			mass_array_tau[i] = (TH1D *)mc_signal->Get(Form("mass_array_tau_%i", i));
-			mass_array_signal[i] = (TH1D *)mc_signal->Get(Form("mass_array_%i", i));
-			mass_array_data[i] = (TH1D *)data_file->Get(Form("mass_array_data_%i", i));
-			mass_array_samesign[i] = (TH1D *)mc_signal->Get(Form("mc_estimate_ss_%i", i));
+			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_nominal_%i", i));
+			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_nominal_%i", i));
+			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_nominal_%i", i));
+		}
+		if (opt == 2)
+		{
+
+			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_nominal_%i", i));
+			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_nominal_%i", i));
+			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_nominal_%i", i));
+			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_nominal_%i", i));
+			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_tnpU_%i", i));
+			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_tnpU_%i", i));
+
+			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_nominal_%i", i));
+			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_tnpU_%i", i));
+			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_tnpU_%i", i));
 		}
 		if (opt == 3)
 		{
 
-			mass_array_W[i] = (TH1D *)mc_w->Get(Form("mass_array_with_eff_%i", i));
-			mass_array_tt[i] = (TH1D *)mc_tt->Get(Form("mass_array_with_eff_%i", i));
-			mass_array_tau[i] = (TH1D *)mc_signal->Get(Form("mass_array_tau_with_eff_%i", i));
-			mass_array_signal[i] = (TH1D *)mc_signal->Get(Form("mass_array_with_eff_%i", i));
-			mass_array_data[i] = (TH1D *)data_file->Get(Form("mass_array_data_with_eff_%i", i));
-			mass_array_samesign[i] = (TH1D *)mc_signal->Get(Form("mc_estimate_ss_with_eff_%i", i));
+			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_nominal_%i", i));
+			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_nominal_%i", i));
+			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_nominal_%i", i));
+			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_nominal_%i", i));
+			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_tnpD_%i", i));
+			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_tnpD_%i", i));
+
+			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_nominal_%i", i));
+			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_tnpD_%i", i));
+			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_tnpD_%i", i));
 		}
-		if (opt == 5)
+		if (opt == 4)
 		{
 
-			mass_array_W[i] = (TH1D *)mc_w->Get(Form("mass_array_witheta_%i", i));
-			mass_array_tt[i] = (TH1D *)mc_tt->Get(Form("mass_array_witheta_%i", i));
-			mass_array_tau[i] = (TH1D *)mc_signal->Get(Form("mass_array_tau_witheta_%i", i));
-			mass_array_signal[i] = (TH1D *)mc_signal->Get(Form("mass_array_witheta_%i", i));
-			mass_array_data[i] = (TH1D *)data_file->Get(Form("mass_array_data_witheta_%i", i));
-			mass_array_samesign[i] = (TH1D *)mc_signal->Get(Form("mc_estimate_ss_witheta_%i", i));
-		}
-		if (opt == 6)
-		{
+			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_AcoOff_%i", i));
+			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_AcoOff_%i", i));
+			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_AcoOff_%i", i));
+			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_AcoOff_%i", i));
+			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_AcoOff_%i", i));
+			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_acooff_%i", i));
 
-			mass_array_W[i] = (TH1D *)mc_w->Get(Form("mass_array_witheta_witheff_%i", i));
-			mass_array_tt[i] = (TH1D *)mc_tt->Get(Form("mass_array_witheta_witheff_%i", i));
-			mass_array_tau[i] = (TH1D *)mc_signal->Get(Form("mass_array_tau_witheta_witheff_%i", i));
-			mass_array_signal[i] = (TH1D *)mc_signal->Get(Form("mass_array_witheta_witheff_%i", i));
-			mass_array_data[i] = (TH1D *)data_file->Get(Form("mass_array_data_witheta_witheff_%i", i));
-			mass_array_samesign[i] = (TH1D *)mc_signal->Get(Form("mc_estimate_ss_witheta_witheff_%i", i));
+			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_AcoOff_%i", i));
+			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_AcoOff_%i", i));
+			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_AcoOff_%i", i));
+			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_AcoOff_%i", i));
+			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_AcoOff_%i", i));
+			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_acooff_%i", i));
 		}
 	}
 
@@ -87,76 +128,160 @@ void plot_normalize(int opt = 1)
 	plotting_helper *ovo = new plotting_helper();
 	ovo->setTDRStyle();
 
-	TH1D *h_normalized_data[11];
-	TH1D *h_normalized_mc[11];
-	TH1D *h_normalized_mc_bk[11];
-	TH1D *h_total_mc_30bins[11];
-	TH1D *h_total_mc_120bins[11];
+	TH1D *h_normalized_data_FA[11];
+	TH1D *h_normalized_mc_FA[11];
+	TH1D *h_normalized_mc_bk_FA[11];
+	TH1D *h_total_mc_30bins_FA[11];
+	TH1D *h_total_mc_120bins_FA[11];
+
+	TH1D *h_normalized_data_Eta[11];
+	TH1D *h_normalized_mc_Eta[11];
+	TH1D *h_normalized_mc_bk_Eta[11];
+	TH1D *h_total_mc_30bins_Eta[11];
+	TH1D *h_total_mc_120bins_Eta[11];
 
 	for (int i = 0; i < 11; i++)
 	{
-		ovo->luminormalize(mass_array_W[i], 2, w_norm);
-		ovo->luminormalize(mass_array_tt[i], 3, tt_norm);
-		ovo->luminormalize(mass_array_tau[i], 1, dy_norm);
-		ovo->luminormalize(mass_array_signal[i], 1, dy_norm);
-		ovo->luminormalize(mass_array_samesign[i], 1, dy_norm);
+		ovo->fixnegativebin(h_FA_mcsignal[i]);
+		ovo->fixnegativebin(h_FA_mcW[i]);
+		ovo->fixnegativebin(h_FA_mctt[i]);
+		ovo->fixnegativebin(h_FA_mctau[i]);
+		ovo->fixnegativebin(h_FA_data[i]);
+		ovo->fixnegativebin(h_FA_samesign[i]);
 
-		h_normalized_data[i] = (TH1D *)mass_array_data[i]->Clone();
+		ovo->fixnegativebin(h_Eta_mcsignal[i]);
+		ovo->fixnegativebin(h_Eta_mcW[i]);
+		ovo->fixnegativebin(h_Eta_mctt[i]);
+		ovo->fixnegativebin(h_Eta_mctau[i]);
+		ovo->fixnegativebin(h_Eta_data[i]);
+		ovo->fixnegativebin(h_Eta_samesign[i]);
 
-		h_normalized_mc[i] = (TH1D *)mass_array_signal[i]->Clone();
-		h_normalized_mc[i]->Add(mass_array_W[i], 1);
-		h_normalized_mc[i]->Add(mass_array_tt[i], 1);
-		h_normalized_mc[i]->Add(mass_array_tau[i], 1);
-		h_normalized_mc[i]->Add(mass_array_samesign[i], 1);
+		ovo->luminormalize(h_FA_mcW[i], 2, w_norm);
+		ovo->luminormalize(h_FA_mctt[i], 3, tt_norm);
+		ovo->luminormalize(h_FA_mctau[i], 1, dy_norm);
+		ovo->luminormalize(h_FA_mcsignal[i], 1, dy_norm);
+		ovo->luminormalize(h_FA_samesign[i], 1, dy_norm);
 
-		h_normalized_mc_bk[i] = (TH1D *)mass_array_W[i]->Clone();
-		h_normalized_mc_bk[i]->Add(mass_array_tt[i], 1);
-		h_normalized_mc_bk[i]->Add(mass_array_tau[i], 1);
-		h_normalized_mc_bk[i]->Add(mass_array_samesign[i], 1);
+		ovo->luminormalize(h_Eta_mcW[i], 2, w_norm);
+		ovo->luminormalize(h_Eta_mctt[i], 3, tt_norm);
+		ovo->luminormalize(h_Eta_mctau[i], 1, dy_norm);
+		ovo->luminormalize(h_Eta_mcsignal[i], 1, dy_norm);
+		ovo->luminormalize(h_Eta_samesign[i], 1, dy_norm);
 
-		h_total_mc_120bins[i] = (TH1D *)mass_array_W[i]->Clone();
-		h_total_mc_120bins[i]->Add(mass_array_tt[i]);
-		h_total_mc_120bins[i]->Add(mass_array_tau[i]);
-		h_total_mc_120bins[i]->Add(mass_array_signal[i]);
-		h_total_mc_120bins[i]->Add(mass_array_samesign[i]);
+		h_normalized_data_FA[i] = (TH1D *)h_FA_data[i]->Clone();
+		h_normalized_data_Eta[i] = (TH1D *)h_Eta_data[i]->Clone();
 
-		ovo->areanormalize(h_normalized_data[i]);
-		ovo->areanormalize(h_normalized_mc[i]);
+		h_normalized_mc_FA[i] = (TH1D *)h_FA_mcsignal[i]->Clone();
+		h_normalized_mc_FA[i]->Add(h_FA_mcW[i], 1);
+		h_normalized_mc_FA[i]->Add(h_FA_mctt[i], 1);
+		h_normalized_mc_FA[i]->Add(h_FA_mctau[i], 1);
+		h_normalized_mc_FA[i]->Add(h_FA_samesign[i], 1);
+
+		h_normalized_mc_Eta[i] = (TH1D *)h_Eta_mcsignal[i]->Clone();
+		h_normalized_mc_Eta[i]->Add(h_Eta_mcW[i], 1);
+		h_normalized_mc_Eta[i]->Add(h_Eta_mctt[i], 1);
+		h_normalized_mc_Eta[i]->Add(h_Eta_mctau[i], 1);
+		h_normalized_mc_Eta[i]->Add(h_Eta_samesign[i], 1);
+
+		h_normalized_mc_bk_FA[i] = (TH1D *)h_FA_mcW[i]->Clone();
+		h_normalized_mc_bk_FA[i]->Add(h_FA_mctt[i], 1);
+		h_normalized_mc_bk_FA[i]->Add(h_FA_mctau[i], 1);
+		h_normalized_mc_bk_FA[i]->Add(h_FA_samesign[i], 1);
+
+		h_normalized_mc_bk_Eta[i] = (TH1D *)h_Eta_mcW[i]->Clone();
+		h_normalized_mc_bk_Eta[i]->Add(h_Eta_mctt[i], 1);
+		h_normalized_mc_bk_Eta[i]->Add(h_Eta_mctau[i], 1);
+		h_normalized_mc_bk_Eta[i]->Add(h_Eta_samesign[i], 1);
+
+		h_total_mc_120bins_FA[i] = (TH1D *)h_FA_mcW[i]->Clone();
+		h_total_mc_120bins_FA[i]->Add(h_FA_mctt[i]);
+		h_total_mc_120bins_FA[i]->Add(h_FA_mctau[i]);
+		h_total_mc_120bins_FA[i]->Add(h_FA_mcsignal[i]);
+		h_total_mc_120bins_FA[i]->Add(h_FA_samesign[i]);
+
+		h_total_mc_120bins_Eta[i] = (TH1D *)h_Eta_mcW[i]->Clone();
+		h_total_mc_120bins_Eta[i]->Add(h_Eta_mctt[i]);
+		h_total_mc_120bins_Eta[i]->Add(h_Eta_mctau[i]);
+		h_total_mc_120bins_Eta[i]->Add(h_Eta_mcsignal[i]);
+		h_total_mc_120bins_Eta[i]->Add(h_Eta_samesign[i]);
+
+		ovo->areanormalize(h_normalized_data_FA[i]);
+		ovo->areanormalize(h_normalized_data_Eta[i]);
+		ovo->areanormalize(h_normalized_mc_FA[i]);
+		ovo->areanormalize(h_normalized_mc_Eta[i]);
 		// ovo->areanormalize(h_normalized_mc_bk[i]);
 
-		double normalization_factor_mc_120bins = h_total_mc_120bins[i]->Integral("width");
-		h_normalized_mc_bk[i]->Scale(1 / normalization_factor_mc_120bins);
+		double normalization_factor_mc_120bins_FA = h_total_mc_120bins_FA[i]->Integral("width");
+		double normalization_factor_mc_120bins_Eta = h_total_mc_120bins_Eta[i]->Integral("width");
+		h_normalized_mc_bk_FA[i]->Scale(1 / normalization_factor_mc_120bins_FA);
+		h_normalized_mc_bk_Eta[i]->Scale(1 / normalization_factor_mc_120bins_Eta);
 
-		mass_array_W[i]->Rebin(4);
-		mass_array_tt[i]->Rebin(4);
-		mass_array_tau[i]->Rebin(4);
-		mass_array_signal[i]->Rebin(4);
-		mass_array_data[i]->Rebin(4);
-		mass_array_samesign[i]->Rebin(4);
+		h_FA_mcW[i]->Rebin(4);
+		h_FA_mctt[i]->Rebin(4);
+		h_FA_mctau[i]->Rebin(4);
+		h_FA_mcsignal[i]->Rebin(4);
+		h_FA_data[i]->Rebin(4);
+		h_FA_samesign[i]->Rebin(4);
 
-		h_total_mc_30bins[i] = (TH1D *)mass_array_W[i]->Clone();
-		h_total_mc_30bins[i]->Add(mass_array_tt[i]);
-		h_total_mc_30bins[i]->Add(mass_array_tau[i]);
-		h_total_mc_30bins[i]->Add(mass_array_signal[i]);
-		h_total_mc_30bins[i]->Add(mass_array_samesign[i]);
+		h_Eta_mcW[i]->Rebin(4);
+		h_Eta_mctt[i]->Rebin(4);
+		h_Eta_mctau[i]->Rebin(4);
+		h_Eta_mcsignal[i]->Rebin(4);
+		h_Eta_data[i]->Rebin(4);
+		h_Eta_samesign[i]->Rebin(4);
 
-		double normalization_factor_mc_30bins = h_total_mc_30bins[i]->Integral("width");
-		mass_array_W[i]->Scale(1 / normalization_factor_mc_30bins);
-		mass_array_tt[i]->Scale(1 / normalization_factor_mc_30bins);
-		mass_array_tau[i]->Scale(1 / normalization_factor_mc_30bins);
-		mass_array_signal[i]->Scale(1 / normalization_factor_mc_30bins);
-		mass_array_samesign[i]->Scale(1 / normalization_factor_mc_30bins);
+		h_total_mc_30bins_FA[i] = (TH1D *)h_FA_mcW[i]->Clone();
+		h_total_mc_30bins_FA[i]->Add(h_FA_mctt[i]);
+		h_total_mc_30bins_FA[i]->Add(h_FA_mctau[i]);
+		h_total_mc_30bins_FA[i]->Add(h_FA_mcsignal[i]);
+		h_total_mc_30bins_FA[i]->Add(h_FA_samesign[i]);
 
-		ovo->areanormalize(mass_array_data[i]);
+		h_total_mc_30bins_Eta[i] = (TH1D *)h_Eta_mcW[i]->Clone();
+		h_total_mc_30bins_Eta[i]->Add(h_Eta_mctt[i]);
+		h_total_mc_30bins_Eta[i]->Add(h_Eta_mctau[i]);
+		h_total_mc_30bins_Eta[i]->Add(h_Eta_mcsignal[i]);
+		h_total_mc_30bins_Eta[i]->Add(h_Eta_samesign[i]);
 
-		ovo->compositeplot(mass_array_data[i], mass_array_signal[i], mass_array_samesign[i], mass_array_tau[i], mass_array_W[i], mass_array_tt[i], i, opt);
+		double normalization_factor_mc_30bins_FA = h_total_mc_30bins_FA[i]->Integral("width");
+		double normalization_factor_mc_30bins_Eta = h_total_mc_30bins_Eta[i]->Integral("width");
+
+		h_FA_mcW[i]->Scale(1 / normalization_factor_mc_30bins_FA);
+		h_FA_mctt[i]->Scale(1 / normalization_factor_mc_30bins_FA);
+		h_FA_mctau[i]->Scale(1 / normalization_factor_mc_30bins_FA);
+		h_FA_mcsignal[i]->Scale(1 / normalization_factor_mc_30bins_FA);
+		h_FA_samesign[i]->Scale(1 / normalization_factor_mc_30bins_FA);
+
+		h_Eta_mcW[i]->Scale(1 / normalization_factor_mc_30bins_Eta);
+		h_Eta_mctt[i]->Scale(1 / normalization_factor_mc_30bins_Eta);
+		h_Eta_mctau[i]->Scale(1 / normalization_factor_mc_30bins_Eta);
+		h_Eta_mcsignal[i]->Scale(1 / normalization_factor_mc_30bins_Eta);
+		h_Eta_samesign[i]->Scale(1 / normalization_factor_mc_30bins_Eta);
+
+		ovo->areanormalize(h_FA_data[i]);
+		ovo->areanormalize(h_Eta_data[i]);
+
+		ovo->compositeplot(h_FA_data[i], h_FA_mcsignal[i], h_FA_samesign[i], h_FA_mctau[i], h_FA_mcW[i], h_FA_mctt[i], i, opt, false);
+		ovo->compositeplot(h_Eta_data[i], h_Eta_mcsignal[i], h_Eta_samesign[i], h_Eta_mctau[i], h_Eta_mcW[i], h_Eta_mctt[i], i, opt, true);
+
 		if (opt == 1)
-			ovo->savehistogram(h_normalized_mc[i], h_normalized_data[i], h_normalized_mc_bk[i], i, rawnormalized);
+		{
+			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_nominal);
+			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_nominal);
+		}
+		if (opt == 2)
+		{
+			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_tnpU);
+			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_tnpU);
+		}
 		if (opt == 3)
-			ovo->savehistogram(h_normalized_mc[i], h_normalized_data[i], h_normalized_mc_bk[i], i, effnormalized);
-		if (opt == 5)
-			ovo->savehistogram(h_normalized_mc[i], h_normalized_data[i], h_normalized_mc_bk[i], i, etacutnormalized);
-		if (opt == 6)
-			ovo->savehistogram(h_normalized_mc[i], h_normalized_data[i], h_normalized_mc_bk[i], i, etacut_effnormalized);
+		{
+			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_tnpD);
+			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_tnpD);
+		}
+		if (opt == 4)
+		{
+			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_Acooff);
+			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_Acooff);
+		}
 	}
 }

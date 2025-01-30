@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc(int opt = 2)
+void get_all_bk_mc(int opt = 3)
 {
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -31,7 +31,7 @@ void get_all_bk_mc(int opt = 2)
 	// opt == 3 means tt;
 	// dont have to worry about starlight
 
-	gSystem->Load("./libDict.so");
+	gSystem->Load("./header/libDict.so");
 
 	MC_18 *s = new MC_18();
 
@@ -56,62 +56,43 @@ void get_all_bk_mc(int opt = 2)
 	}
 
 	TEfficiency *e[11];
+	TEfficiency *e_without_aco[11];
 
 	TFile *eff_f1 = new TFile("./rootfile/mc_eff.root", "READ");
 	for (int i = 0; i < 11; i++)
 	{
 		e[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
+		e_without_aco[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_noAco_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
 	}
 
 	// Histogram setup
+
+	// These are nominal, so with Aco cut, with eff.
 	TH1D *event_weight = new TH1D("event_weight", "event_weight", 1, 0, 1);
-	TH1D *mass_array[11];
-	TH1D *mass_array_with_eff[11];
-	TH1D *mass_array_witheta[11];
-	TH1D *mass_array_witheta_witheff[11];
 
-	TH1D *mass_array_tau[11];
-	TH1D *mass_array_tau_with_eff[11];
-	TH1D *mass_array_tau_witheta[11];
-	TH1D *mass_array_tau_witheta_witheff[11];
+	TH1D *FA_nominal[11];
+	TH1D *Eta_nominal[11];
 
-	RooRealVar *roomass[11];
+	TH1D *FA_AcoOff[11];
+	TH1D *Eta_AcoOff[11];
 
-	RooDataSet *rooreco[11];
-	RooDataSet *rooreco_eff[11];
-	RooDataSet *rooreco_eta[11];
-	RooDataSet *rooreco_eta_eff[11];
+	TH1D *FA_tau_nominal[11];
+	TH1D *Eta_tau_nominal[11];
 
-	RooDataSet *roogen[11];
-	RooDataSet *roogen_y[11];
-	RooDataSet *roogen_eta[11];
+	TH1D *FA_tau_AcoOff[11];
+	TH1D *Eta_tau_AcoOff[11];
 
 	for (int i = 0; i < s->centarraysize; i++)
 	{
-		roomass[i] = new RooRealVar("roomass", "roomass", 60, 120);
-		roomass[i]->setBinning(RooBinning(10000, 60, 120));
+		FA_nominal[i] = new TH1D(Form("FA_nominal_%i", i), "", 120, 60, 120);
+		Eta_nominal[i] = new TH1D(Form("Eta_nominal_%i", i), "", 120, 60, 120);
+		FA_AcoOff[i] = new TH1D(Form("FA_AcoOff_%i", i), "", 120, 60, 120);
+		Eta_AcoOff[i] = new TH1D(Form("Eta_AcoOff_%i", i), "", 120, 60, 120);
 
-		rooreco[i] = new RooDataSet(Form("rooreco_%i", i), Form("rooreco_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		rooreco_eff[i] = new RooDataSet(Form("rooreco_eff_%i", i), Form("rooreco_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		rooreco_eta[i] = new RooDataSet(Form("rooreco_eta_%i", i), Form("rooreco_eta_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		rooreco_eta_eff[i] = new RooDataSet(Form("rooreco_eta_eff_%i", i), Form("rooreco_eta_eff_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-
-		roogen[i] = new RooDataSet(Form("roogen_%i", i), Form("roogen_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		roogen_y[i] = new RooDataSet(Form("roogen_y_%i", i), Form("roogen_y_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-		roogen_eta[i] = new RooDataSet(Form("roogen_eta_%i", i), Form("roogen_eta_%i", i), RooArgSet(*roomass[i]), RooFit::WeightVar("eventWeight"));
-	}
-
-	for (int i = 0; i < s->centarraysize; i++)
-	{
-		mass_array[i] = new TH1D(Form("mass_array_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_with_eff[i] = new TH1D(Form("mass_array_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_witheta[i] = new TH1D(Form("mass_array_witheta_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_witheta_witheff[i] = new TH1D(Form("mass_array_witheta_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-
-		mass_array_tau[i] = new TH1D(Form("mass_array_tau_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_tau_with_eff[i] = new TH1D(Form("mass_array_tau_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_tau_witheta[i] = new TH1D(Form("mass_array_tau_witheta_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_tau_witheta_witheff[i] = new TH1D(Form("mass_array_tau_witheta_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
+		FA_tau_nominal[i] = new TH1D(Form("FA_tau_nominal_%i", i), "", 120, 60, 120);
+		Eta_tau_nominal[i] = new TH1D(Form("Eta_tau_nominal_%i", i), "", 120, 60, 120);
+		FA_tau_AcoOff[i] = new TH1D(Form("FA_tau_AcoOff_%i", i), "", 120, 60, 120);
+		Eta_tau_AcoOff[i] = new TH1D(Form("Eta_tau_AcoOff_%i", i), "", 120, 60, 120);
 	}
 
 	cout << "entires is " << s->t1->GetEntries() << endl;
@@ -163,7 +144,6 @@ void get_all_bk_mc(int opt = 2)
 
 		float eventweight = 1.0;
 		eventweight = vzRW->reweightFactor(s->bestvtxZ) * vzRW->reweightFactorCent(hiBin) * s->Ncoll[hiBin] * (s->weightLHE_gen->at(1080) / 10000.0);
-		// cout << eventweight << endl;
 		event_weight->Fill(0.5, eventweight);
 
 		if (!(s->trigHLT[6]))
@@ -175,7 +155,6 @@ void get_all_bk_mc(int opt = 2)
 			if (TMath::Abs(s->DecayID_gen[j]) == 23)
 			{
 				double ptWeight = spectrumRW->getReweightFactorMuon(s->pT_gen[j]);
-				// cout << "ptWeight is " << ptWeight << endl;
 				eventweight *= ptWeight;
 				isTau = false;
 				break;
@@ -184,54 +163,6 @@ void get_all_bk_mc(int opt = 2)
 			{
 				isTau = 1;
 				break;
-			}
-		}
-
-		for (unsigned int j = 0; j < s->candSize_gen; j++)
-		{
-			if (s->PID_gen[j] != 23)
-				continue;
-			if (s->DecayID_gen[j] != 23)
-				continue;
-			if (s->pTD1_gen[j] < s->ptlowlimit)
-				continue;
-			if (s->pTD2_gen[j] < s->ptlowlimit)
-				continue;
-			if (abs(s->EtaD1_gen[j]) > 2.4)
-				continue;
-			if (abs(s->EtaD2_gen[j]) > 2.4)
-				continue;
-			if (abs(s->y_gen[j]) > 2.4)
-				continue;
-
-			bool isOppositeSign = s->chargeD1_gen[j] != s->chargeD2_gen[j];
-			int centbinpositioncounter[11] = {};
-			s->CentBinSearching(centbinpositioncounter, hiBin);
-
-			if (isOppositeSign)
-			{
-				for (int k = 0; k < s->centarraysize; k++)
-				{
-					if (centbinpositioncounter[k] != 0)
-					{
-						Float_t massofZ_gen = s->Calc_Z_gen(j);
-						if (massofZ_gen >= 120 || massofZ_gen < 60)
-							continue;
-						if (abs(s->y_gen[j]) < 1)
-						{
-							roomass[k]->setVal(massofZ_gen);
-							roogen_y[k]->add(RooArgSet(*roomass[k]), eventweight);
-						}
-						if ((abs(s->EtaD1_gen[j]) < 1) && (abs(s->EtaD2_gen[j]) < 1))
-						{
-							roomass[k]->setVal(massofZ_gen);
-							roogen_eta[k]->add(RooArgSet(*roomass[k]), eventweight);
-						}
-						// raw one
-						roomass[k]->setVal(massofZ_gen);
-						roogen[k]->add(RooArgSet(*roomass[k]), eventweight);
-					}
-				}
 			}
 		}
 
@@ -264,69 +195,62 @@ void get_all_bk_mc(int opt = 2)
 
 			int centbinpositioncounter[11] = {};
 			s->CentBinSearching(centbinpositioncounter, hiBin);
-			// cout << "hiBin is " << hiBin << endl;
+
+			float acoplanarity = 1 - TMath::Abs(TMath::ACos(TMath::Cos(s->PhiD1[j] - s->PhiD2[j]))) / TMath::Pi();
+			bool passesAco[3] = {1, 1, 1};
+			if (s->pT[j] < 1.25 && acoplanarity < 0.001)
+				passesAco[0] = false;
 
 			if (isOppositeSign)
 			{
-				if (opt == 1)
-				{
-					if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
-					{
-						if (abs(s->y[j]) > 1)
-							cout << "Warning Z has y > 1 with eta cut < 1 on both" << endl;
-					}
-				}
-
 				for (int k = 0; k < s->centarraysize; k++)
 				{
 					if (centbinpositioncounter[k] != 0)
 					{
 						if (!isTau)
 						{
-							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-							mass_array[k]->Fill(s->mass[j], eventweight);
-							mass_array_with_eff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-
-							roomass[k]->setVal(s->mass[j]);
-							rooreco[k]->add(RooArgSet(*roomass[k]), eventweight);
-							rooreco_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
-
-							if ((1.0 / efficiency * eventweight) < 0) cout << "This is negative! value is " << (1.0 / efficiency * eventweight) << endl;
-
-							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+							if (passesAco[0])
 							{
-								// Skipped Oct 8
 								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-								mass_array_witheta[k]->Fill(s->mass[j], eventweight);
-								mass_array_witheta_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+								FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
-								roomass[k]->setVal(s->mass[j]);
-								rooreco_eta[k]->add(RooArgSet(*roomass[k]), eventweight);
-								rooreco_eta_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
-
+								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+								{
+									double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+									Eta_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+								}
 							}
-							// Skipped Oct 8
-							/*if (abs(s->y[j]) < 1)
-							{
-								mass_array_withy[k]->Fill(s->mass[j], eventweight);
-								mass_array_withy_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
-								roomass[k]->setVal(s->mass[j]);
-								rooreco_y[k]->add(RooArgSet(*roomass[k]), eventweight);
-								rooreco_y_eff[k]->add(RooArgSet(*roomass[k]), 1.0 / efficiency * eventweight);
-							}*/
-						}
-						if (isTau) // Skipped Oct 8
-						{
-							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-							mass_array_tau[k]->Fill(s->mass[j], eventweight);
-							mass_array_tau_with_eff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+							double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
+							FA_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 							{
+								double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
+								Eta_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
+							}
+						}
+						if (isTau)
+						{
+							if (passesAco[0])
+							{
 								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-								mass_array_tau_witheta[k]->Fill(s->mass[j], eventweight);
-								mass_array_tau_witheta_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+								FA_tau_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+
+								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+								{
+									double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+									Eta_tau_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+								}
+							}
+
+							double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
+							FA_tau_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
+
+							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+							{
+								double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
+								Eta_tau_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
 							}
 						}
 					}
@@ -348,40 +272,17 @@ void get_all_bk_mc(int opt = 2)
 
 	for (int i = 0; i < s->centarraysize; i++)
 	{
-		mass_array[i]->Write("", 2);
-		mass_array_with_eff[i]->Write("", 2);
-		mass_array_witheta[i]->Write("", 2);
-		mass_array_witheta_witheff[i]->Write("", 2);
+		FA_nominal[i]->Write("", 2);
+		Eta_nominal[i]->Write("", 2);
+		FA_AcoOff[i]->Write("", 2);
+		Eta_AcoOff[i]->Write("", 2);
 
-		mass_array_tau[i]->Write("", 2);
-		mass_array_tau_with_eff[i]->Write("", 2);
-		mass_array_tau_witheta[i]->Write("", 2);
-		mass_array_tau_witheta_witheff[i]->Write("", 2);
-
-		rooreco[i]->Write("", 2);
-		rooreco_eff[i]->Write("", 2);
-		rooreco_eta[i]->Write("", 2);
-		rooreco_eta_eff[i]->Write("", 2);
-
-		roogen[i]->Write("", 2);
-		roogen_y[i]->Write("", 2);
-		roogen_eta[i]->Write("", 2);
+		FA_tau_nominal[i]->Write("", 2);
+		Eta_tau_nominal[i]->Write("", 2);
+		FA_tau_AcoOff[i]->Write("", 2);
+		Eta_tau_AcoOff[i]->Write("", 2);
 	}
-
-	/*if (opt == 1) // Skipped Oct 8
-	{
-		TCanvas *c1 = new TCanvas("", "", 1200, 600);
-		c1->Divide(2, 1);
-		// c1->SetLogy(1);
-		c1->cd(1);
-		y_without_cut->Draw("hist");
-		c1->cd(2);
-		y_with_cut->Draw("hist");
-		c1->SaveAs("./etacheck/mc_signal.pdf");
-	}*/
 
 	histogram_file->Close();
 	s->f1->Close();
-
-	cout << "All Finished F*** the internet" << endl;
 }

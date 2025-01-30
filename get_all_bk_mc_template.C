@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 1, int opt = 1)
+void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 {
 
 	MC_18 *s = new MC_18();
@@ -33,17 +33,19 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 	// opt == 3 means tt;
 	// dont have to worry about starlight
 
-	const int nbins_mass_shift = 21;
-	const int nbins_smear = 21;
+	const int nbins_mass_shift = 42;
+	const int nbins_smear = 42;
 	const int nbins_cent = 11;
-
-	TH1D *mass_array_with_eff_template[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *mass_array_witheta_witheff_template[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *mass_array_raw_template[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *mass_array_witheta_template[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	TFile *ratio_file_raw[nbins_cent];
 	TFile *ratio_file_eta[nbins_cent];
+
+	TString postname = "";
+
+	if (isbkver)
+		postname = "_bk.root";
+	if (!isbkver)
+		postname = "_nobk.root";
 
 	for (int i = 0; i < nbins_cent; i++)
 	{
@@ -56,14 +58,20 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 		}
 		if (ispp)
 		{
-			ratio_file_raw[i] = new TFile("../bwgaus/pp_raw.root", "READ");
-			ratio_file_eta[i] = new TFile("../bwgaus/pp_eta.root", "READ");
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/pp_raw%s", postname.Data()), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/pp_eta%s", postname.Data()), "READ");
 		}
 	}
 
 	TString ratio_name = "Compare_shift_%i_smear_%i";
 	TF1 *t_ratio_raw[nbins_mass_shift][nbins_smear][nbins_cent];
 	TF1 *t_ratio_eta[nbins_mass_shift][nbins_smear][nbins_cent];
+
+	TH1D *template_FA_nominal[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *template_FA_acooff[nbins_mass_shift][nbins_smear][nbins_cent];
+
+	TH1D *template_Eta_nominal[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *template_Eta_acooff[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	for (int i = 0; i < nbins_mass_shift; ++i)
 	{
@@ -75,10 +83,11 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 					continue;
 				t_ratio_raw[i][j][k] = (TF1 *)ratio_file_raw[k]->Get(Form(ratio_name, i, j));
 				t_ratio_eta[i][j][k] = (TF1 *)ratio_file_eta[k]->Get(Form(ratio_name, i, j));
-				mass_array_with_eff_template[i][j][k] = new TH1D(Form("mass_array_with_eff_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				mass_array_witheta_witheff_template[i][j][k] = new TH1D(Form("mass_array_witheta_witheff_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				mass_array_raw_template[i][j][k] = new TH1D(Form("mass_array_raw_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				mass_array_witheta_template[i][j][k] = new TH1D(Form("mass_array_witheta_template_%i_%i_%i", i, j, k), "", 120, 60, 120);
+
+				template_FA_nominal[i][j][k] = new TH1D(Form("template_FA_nominal_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				template_FA_acooff[i][j][k] = new TH1D(Form("template_FA_acooff_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				template_Eta_nominal[i][j][k] = new TH1D(Form("template_Eta_nominal_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				template_Eta_acooff[i][j][k] = new TH1D(Form("template_Eta_acooff_%i_%i_%i", i, j, k), "", 120, 60, 120);
 			}
 		}
 	}
@@ -89,70 +98,38 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 	PtReweightSpectrum *spectrumRW = new PtReweightSpectrum("WeightsAndEfficiencies_Z2mummu/ptSpectrumReweighting.root");
 	MuonTnP *tnp = new MuonTnP();
 
-	if (opt == 1)
-	{
-		s->SetupRootfile(1, 1);
-		s->SetupBranches(0);
-	}
-	if (opt == 2)
-	{
-		s->SetupRootfile(2, 1);
-		s->SetupBranches(0);
-	}
-	if (opt == 3)
-	{
-		s->SetupRootfile(3, 1);
-		s->SetupBranches(0);
-	}
+	s->SetupRootfile(1, 1);
+	s->SetupBranches(0);
 
 	TEfficiency *e[11];
+	TEfficiency *e_acooff[11];
 
 	TFile *eff_f1 = new TFile("./rootfile/mc_eff.root", "READ");
 	for (int i = 0; i < 11; i++)
 	{
 		e[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
+		e_acooff[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_noAco_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
 	}
 
 	// Histogram setup
 	TH1D *event_weight = new TH1D("event_weight", "event_weight", 1, 0, 1);
-	TH1D *mass_array_raw[11];
-	TH1D *mass_array_with_eff[11];
-	TH1D *mass_array_witheta[11];
-	TH1D *mass_array_witheta_witheff[11];
-
-	TH1D *mass_array_gen_with_eff[11];
-	TH1D *mass_array_gen_witheta_witheff[11];
-
-	for (int i = 0; i < s->centarraysize; i++)
-	{
-		mass_array_raw[i] = new TH1D(Form("mass_array_raw_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_witheta[i] = new TH1D(Form("mass_array_witheta_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_with_eff[i] = new TH1D(Form("mass_array_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_witheta_witheff[i] = new TH1D(Form("mass_array_witheta_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_gen_with_eff[i] = new TH1D(Form("mass_array_gen_with_eff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-		mass_array_gen_witheta_witheff[i] = new TH1D(Form("mass_array_gen_witheta_witheff_%i", i), Form("mc_bk_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]), 120, 60, 120);
-	}
 
 	cout << "entires is " << s->t1->GetEntries() << endl;
 
 	Long64_t totalEntries = s->t1->GetEntries();
-	Long64_t entriesPerSegment = totalEntries / numSegments;
-	Long64_t startEntry = jobID * entriesPerSegment;
-	Long64_t endEntry = (jobID == numSegments - 1) ? totalEntries : (jobID + 1) * entriesPerSegment;
-	std::cout << "Processing segment " << jobID << ": Entries " << startEntry << " to " << endEntry - 1 << std::endl;
 
-	for (int i = startEntry; i < endEntry; i++)
+	for (int i = 0; i < totalEntries; i++)
 	{
-		double percentage = 100.0 * (i - startEntry) / (endEntry - startEntry);
+		double percentage = 100.0 * (i - 0) / (totalEntries - 0);
 
-		if ((i - startEntry) % 1000 == 0)
+		if ((i - 0) % 1000 == 0)
 		{
 
 			auto now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> elapsed = now - start;
 
 			// Estimate remaining time based on entries processed within the specified range
-			double remaining_time = elapsed.count() * (endEntry - i) / (i - startEntry + 1);
+			double remaining_time = elapsed.count() * (totalEntries - i) / (i - 0 + 1);
 
 			// Convert remaining time to a human-readable format (hours, minutes, seconds)
 			int hours = static_cast<int>(remaining_time) / 3600;
@@ -243,6 +220,11 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 			s->CentBinSearching(centbinpositioncounter, hiBin);
 			// cout << "hiBin is " << hiBin << endl;
 
+			float acoplanarity = 1 - TMath::Abs(TMath::ACos(TMath::Cos(s->PhiD1[j] - s->PhiD2[j]))) / TMath::Pi();
+			bool passesAco[3] = {1, 1, 1};
+			if (s->pT[j] < 1.25 && acoplanarity < 0.001)
+				passesAco[0] = false;
+
 			if (isOppositeSign)
 			{
 				bool isgenmatching = false;
@@ -268,38 +250,53 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 					{
 						if (!isTau)
 						{
-							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-							mass_array_with_eff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-							mass_array_raw[k]->Fill(s->mass[j], eventweight);
+							if (passesAco[0])
+							{
+								double gen_mass = s->Calc_Z_gen(matchedgenindex);
+								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+
+								for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+								{
+									for (int smear = 0; smear < nbins_smear; smear++)
+									{
+										double ratio_weight = t_ratio_raw[massshift][smear][k]->Eval(gen_mass);
+										template_FA_nominal[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
+									}
+								}
+
+								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+								{
+									for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+									{
+										for (int smear = 0; smear < nbins_smear; smear++)
+										{
+											double ratio_weight = t_ratio_eta[massshift][smear][k]->Eval(gen_mass);
+											template_Eta_nominal[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
+										}
+									}
+								}
+							}
+
 							double gen_mass = s->Calc_Z_gen(matchedgenindex);
-							// cout << "gen_mass is " << gen_mass << endl;
-							mass_array_gen_with_eff[k]->Fill(gen_mass, eventweight);
+							double efficiency_acooff = s->getEfficiency(e_acooff[k], s->y[j], s->pT[j]);
 
 							for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
 							{
 								for (int smear = 0; smear < nbins_smear; smear++)
 								{
 									double ratio_weight = t_ratio_raw[massshift][smear][k]->Eval(gen_mass);
-									mass_array_with_eff_template[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
-									mass_array_raw_template[massshift][smear][k]->Fill(s->mass[j], eventweight * ratio_weight);
+									template_FA_acooff[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight * ratio_weight);
 								}
 							}
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 							{
-								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-								mass_array_witheta_witheff[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-								mass_array_witheta[k]->Fill(s->mass[j], eventweight);
-								double gen_mass = s->Calc_Z_gen(matchedgenindex);
-								mass_array_gen_witheta_witheff[k]->Fill(gen_mass, eventweight);
-
 								for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
 								{
 									for (int smear = 0; smear < nbins_smear; smear++)
 									{
 										double ratio_weight = t_ratio_eta[massshift][smear][k]->Eval(gen_mass);
-										mass_array_witheta_witheff_template[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
-										mass_array_witheta_template[massshift][smear][k]->Fill(s->mass[j], eventweight * ratio_weight);
+										template_Eta_acooff[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight * ratio_weight);
 									}
 								}
 							}
@@ -312,28 +309,12 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 
 	TFile *histogram_file;
 	if (!ispp)
-		histogram_file = new TFile("./rootfile/new_template_reco_gen.root", "UPDATE");
+		histogram_file = new TFile("./rootfile/template_PbPb.root", "UPDATE");
 	if (ispp)
-		histogram_file = new TFile("./rootfile/new_template_pp_reco_gen.root", "UPDATE");
+		histogram_file = new TFile(Form("./rootfile/template_pp%s", postname.Data()), "UPDATE");
 
 	histogram_file->cd();
-	/*mass_array_with_eff[0]->Write("", 2);
-	mass_array_with_eff_template[0][0][0]->Write("",2);
-	TH1D *Diff = (TH1D*) mass_array_with_eff[0]->Clone();
-	Diff->Add(mass_array_with_eff_template[0][0][0],-1);
-	Diff->Write("Diff",2);*/
 
-	for (int i = 0; i < s->centarraysize; i++)
-	{
-		if (!((i < 4) || (i == 10)))
-			continue;
-		mass_array_with_eff[i]->Write("", 2);
-		mass_array_raw[i]->Write("", 2);
-		mass_array_witheta_witheff[i]->Write("", 2);
-		mass_array_witheta[i]->Write("", 2);
-		mass_array_gen_with_eff[i]->Write("", 2);
-		mass_array_gen_witheta_witheff[i]->Write("", 2);
-	}
 	for (int i = 0; i < nbins_cent; i++)
 	{
 		if (!((i < 4) || (i == 10)))
@@ -343,17 +324,10 @@ void get_all_bk_mc_template(bool ispp = false, int jobID = 0, int numSegments = 
 		{
 			for (int k = 0; k < nbins_smear; k++)
 			{
-				mass_array_with_eff_template[j][k][i]->Write("", 2);
-				mass_array_witheta_witheff_template[j][k][i]->Write("", 2);
-				mass_array_raw_template[j][k][i]->Write("", 2);
-				mass_array_witheta_template[j][k][i]->Write("", 2);
-				TH1D *Diff = (TH1D *)mass_array_with_eff[i]->Clone();
-				TH1D *Diff_eta = (TH1D *)mass_array_witheta_witheff[i]->Clone();
-				Diff->Add(mass_array_with_eff_template[j][k][i], -1);
-				Diff_eta->Add(mass_array_witheta_witheff_template[j][k][i], -1);
-
-				Diff->Write(Form("Diffplot_FA_shift_%i_smear_%i_cent_%i", j, k, i), 2);
-				Diff_eta->Write(Form("Diffplot_eta_shift_%i_smear_%i_cent_%i", j, k, i), 2);
+				template_FA_nominal[j][k][i]->Write("", 2);
+				template_FA_acooff[j][k][i]->Write("", 2);
+				template_Eta_nominal[j][k][i]->Write("", 2);
+				template_Eta_acooff[j][k][i]->Write("", 2);
 			}
 		}
 	}
