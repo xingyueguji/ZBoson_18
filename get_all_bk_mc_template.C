@@ -21,8 +21,28 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
+void get_all_bk_mc_template(int type = 4)
 {
+	// 1 = PbPb
+	// 2 = pp bk
+	// 3 = pp nobk
+	// 4 = pp mass range
+
+	// 5 = PbPb zoomin nominal
+	// 6 = PbPb zoomin tnpD
+	// 7 = PbPb zoomin tnpU
+	// 8 = PbPb zoomin acooff
+	// 9 = PbPb zoomin nominal_no_bk_sub
+	// 10 = PbPb zoomin nominal_binning
+	// 11 = PbPb zoomin nominal_range
+
+	// 12 = pp zoomin nominal
+	// 13 = pp zoomin tnpD
+	// 14 = pp zoomin tnpU
+	// 15 = pp zoomin acooff
+	// 16 = pp zoomin nominal_no_bk_sub
+	// 17 = pp zoomin nominal_binning
+	// 18 = pp zoomin nominal_range
 
 	MC_18 *s = new MC_18();
 
@@ -42,24 +62,105 @@ void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 
 	TString postname = "";
 
-	if (isbkver)
-		postname = "_bk.root";
-	if (!isbkver)
-		postname = "_nobk.root";
-
 	for (int i = 0; i < nbins_cent; i++)
 	{
 		if (!((i < 4) || (i == 10)))
 			continue;
-		if (!ispp)
+		if (type == 1)
 		{
 			ratio_file_raw[i] = new TFile(Form("../bwgaus/raw_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
 			ratio_file_eta[i] = new TFile(Form("../bwgaus/eta_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
 		}
-		if (ispp)
+		else if (type == 2)
 		{
-			ratio_file_raw[i] = new TFile(Form("../bwgaus/pp_raw%s", postname.Data()), "READ");
-			ratio_file_eta[i] = new TFile(Form("../bwgaus/pp_eta%s", postname.Data()), "READ");
+			ratio_file_raw[i] = new TFile("../bwgaus/pp_raw_bk.root", "READ");
+			ratio_file_eta[i] = new TFile("../bwgaus/pp_eta_bk.root", "READ");
+		}
+		else if (type == 3)
+		{
+			ratio_file_raw[i] = new TFile("../bwgaus/pp_raw_nobk.root", "READ");
+			ratio_file_eta[i] = new TFile("../bwgaus/pp_eta_nobk.root", "READ");
+		}
+		else if (type == 4)
+		{
+			ratio_file_raw[i] = new TFile("../bwgaus/pp_raw_mass_range.root", "READ");
+			ratio_file_eta[i] = new TFile("../bwgaus/pp_eta_mass_range.root", "READ");
+		}
+
+		// Zoom in PbPb
+
+		else if (type == 5)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_nominal_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_nominal_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+		else if (type == 6)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_tnpU_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_tnpU_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+		else if (type == 7)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_tnpD_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_tnpD_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+		else if (type == 8)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_acooff_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_acooff_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+		else if (type == 9)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_nominal_no_bk_sub_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_nominal_no_bk_sub_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+		else if (type == 10)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_nominal_binning_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_nominal_binning_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+		else if (type == 11)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_nominal_range_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_nominal_range_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+
+		// Zoom in pp
+
+		else if (type == 12)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_nominal_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_nominal_%i.root", 22), "READ");
+		}
+		else if (type == 13)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_tnpU_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_tnpU_%i.root", 22), "READ");
+		}
+		else if (type == 14)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_tnpD_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_tnpD_%i.root", 22), "READ");
+		}
+		else if (type == 15)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_acooff_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_acooff_%i.root", 22), "READ");
+		}
+		else if (type == 16)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_nominal_no_bk_sub_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_nominal_no_bk_sub_%i.root", 22), "READ");
+		}
+		else if (type == 17)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_nominal_binning_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_nominal_binning_%i.root", 22), "READ");
+		}
+		else if (type == 18)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_nominal_range_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_nominal_range_%i.root", 22), "READ");
 		}
 	}
 
@@ -69,9 +170,11 @@ void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 
 	TH1D *template_FA_nominal[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *template_FA_acooff[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *template_FA_mass_range[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	TH1D *template_Eta_nominal[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *template_Eta_acooff[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *template_Eta_mass_range[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	for (int i = 0; i < nbins_mass_shift; ++i)
 	{
@@ -88,6 +191,9 @@ void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 				template_FA_acooff[i][j][k] = new TH1D(Form("template_FA_acooff_%i_%i_%i", i, j, k), "", 120, 60, 120);
 				template_Eta_nominal[i][j][k] = new TH1D(Form("template_Eta_nominal_%i_%i_%i", i, j, k), "", 120, 60, 120);
 				template_Eta_acooff[i][j][k] = new TH1D(Form("template_Eta_acooff_%i_%i_%i", i, j, k), "", 120, 60, 120);
+
+				template_FA_mass_range[i][j][k] = new TH1D(Form("template_FA_mass_range_%i_%i_%i", i, j, k), "", 80, 70, 110);
+				template_Eta_mass_range[i][j][k] = new TH1D(Form("template_Eta_mass_range_%i_%i_%i", i, j, k), "", 80, 70, 110);
 			}
 		}
 	}
@@ -261,6 +367,7 @@ void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 									{
 										double ratio_weight = t_ratio_raw[massshift][smear][k]->Eval(gen_mass);
 										template_FA_nominal[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
+										template_FA_mass_range[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
 									}
 								}
 
@@ -272,6 +379,7 @@ void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 										{
 											double ratio_weight = t_ratio_eta[massshift][smear][k]->Eval(gen_mass);
 											template_Eta_nominal[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
+											template_Eta_mass_range[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight * ratio_weight);
 										}
 									}
 								}
@@ -308,10 +416,44 @@ void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 	}
 
 	TFile *histogram_file;
-	if (!ispp)
+	if (type == 1)
 		histogram_file = new TFile("./rootfile/template_PbPb.root", "UPDATE");
-	if (ispp)
-		histogram_file = new TFile(Form("./rootfile/template_pp%s", postname.Data()), "UPDATE");
+	if (type == 2)
+		histogram_file = new TFile("./rootfile/template_pp_bk.root", "UPDATE");
+	if (type == 3)
+		histogram_file = new TFile("./rootfile/template_pp_nobk.root", "UPDATE");
+	if (type == 4)
+		histogram_file = new TFile("./rootfile/template_pp_mass_range.root", "UPDATE");
+
+	if (type == 5)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_nominal.root", "UPDATE");
+	if (type == 6)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_tnpU.root", "UPDATE");
+	if (type == 7)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_tnpD.root", "UPDATE");
+	if (type == 8)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_acooff.root", "UPDATE");
+	if (type == 9)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_nominal_no_bksub.root", "UPDATE");
+	if (type == 10)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_nominal_binning.root", "UPDATE");
+	if (type == 11)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_nominal_range.root", "UPDATE");
+
+	if (type == 12)
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_nominal.root", "UPDATE");
+	if (type == 13)
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_tnpU.root", "UPDATE");
+	if (type == 14)
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_tnpD.root", "UPDATE");
+	if (type == 15)
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_acooff.root", "UPDATE");
+	if (type == 16)
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_nominal_no_bksub.root", "UPDATE");
+	if (type == 17)
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_nominal_binning.root", "UPDATE");
+	if (type == 18)
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_nominal_range.root", "UPDATE");
 
 	histogram_file->cd();
 
@@ -328,6 +470,8 @@ void get_all_bk_mc_template(bool ispp = true, bool isbkver = true)
 				template_FA_acooff[j][k][i]->Write("", 2);
 				template_Eta_nominal[j][k][i]->Write("", 2);
 				template_Eta_acooff[j][k][i]->Write("", 2);
+				template_FA_mass_range[j][k][i]->Write("", 2);
+				template_Eta_mass_range[j][k][i]->Write("", 2);
 			}
 		}
 	}

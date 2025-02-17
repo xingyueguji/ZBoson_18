@@ -64,6 +64,9 @@ void get_data()
 	TH1D *FA_tnpD[11];
 	TH1D *Eta_tnpD[11];
 
+	TH1D *FA_mass_range[11];
+	TH1D *Eta_mass_range[11];
+
 	TH1D *FA_ss_nominal[11];
 	TH1D *Eta_ss_nominal[11];
 
@@ -76,6 +79,9 @@ void get_data()
 	TH1D *FA_ss_tnpD[11];
 	TH1D *Eta_ss_tnpD[11];
 
+	TH1D *FA_ss_mass_range[11];
+	TH1D *Eta_ss_mass_range[11];
+
 	for (int i = 0; i < data->centarraysize; i++)
 	{
 		FA_nominal[i] = new TH1D(Form("FA_nominal_%i", i), "", 120, 60, 120);
@@ -86,6 +92,8 @@ void get_data()
 		Eta_tnpU[i] = new TH1D(Form("Eta_tnpU_%i", i), "", 120, 60, 120);
 		FA_tnpD[i] = new TH1D(Form("FA_tnpD_%i", i), "", 120, 60, 120);
 		Eta_tnpD[i] = new TH1D(Form("Eta_tnpD_%i", i), "", 120, 60, 120);
+		FA_mass_range[i] = new TH1D(Form("FA_mass_range_%i", i), "", 80, 70, 110);
+		Eta_mass_range[i] = new TH1D(Form("Eta_mass_range_%i", i), "", 80, 70, 110);
 
 		FA_ss_nominal[i] = new TH1D(Form("FA_ss_nominal_%i", i), "", 120, 60, 120);
 		Eta_ss_nominal[i] = new TH1D(Form("Eta_ss_nominal_%i", i), "", 120, 60, 120);
@@ -95,6 +103,8 @@ void get_data()
 		Eta_ss_tnpU[i] = new TH1D(Form("Eta_ss_tnpU_%i", i), "", 120, 60, 120);
 		FA_ss_tnpD[i] = new TH1D(Form("FA_ss_tnpD_%i", i), "", 120, 60, 120);
 		Eta_ss_tnpD[i] = new TH1D(Form("Eta_ss_tnpD_%i", i), "", 120, 60, 120);
+		FA_ss_mass_range[i] = new TH1D(Form("FA_ss_mass_range_%i", i), "", 80, 70, 110);
+		Eta_ss_mass_range[i] = new TH1D(Form("Eta_ss_mass_range_%i", i), "", 80, 70, 110);
 	}
 
 	int nentries = data->t1->GetEntries();
@@ -173,6 +183,7 @@ void get_data()
 						FA_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
 						FA_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
 						FA_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
+						FA_mass_range[k]->Fill(data->mass[j], 1.0 / efficiency);
 
 						// with eta cut < 1 on both D1 and D2 muons
 						if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
@@ -183,6 +194,7 @@ void get_data()
 							Eta_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
 							Eta_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
 							Eta_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
+							Eta_mass_range[k]->Fill(data->mass[j], 1.0 / efficiency);
 						}
 					}
 
@@ -272,6 +284,7 @@ void get_data()
 						FA_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
 						FA_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
 						FA_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
+						FA_ss_mass_range[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
 
 						// with eta cut < 1 on both D1 and D2 muons
 						if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
@@ -282,6 +295,7 @@ void get_data()
 							Eta_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
 							Eta_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
 							Eta_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
+							Eta_ss_mass_range[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
 						}
 					}
 
@@ -311,6 +325,9 @@ void get_data()
 		Eta_tnpU[i]->Write("", 2);
 		FA_tnpD[i]->Write("", 2);
 		Eta_tnpD[i]->Write("", 2);
+		FA_mass_range[i]->Write("",2);
+		Eta_mass_range[i]->Write("",2);
+
 
 		FA_ss_nominal[i]->Write("", 2);
 		Eta_ss_nominal[i]->Write("", 2);
@@ -320,6 +337,8 @@ void get_data()
 		Eta_ss_tnpU[i]->Write("", 2);
 		FA_ss_tnpD[i]->Write("", 2);
 		Eta_ss_tnpD[i]->Write("", 2);
+		FA_ss_mass_range[i]->Write("",2);
+		Eta_ss_mass_range[i]->Write("",2);
 	}
 
 	histogram_file->Close();

@@ -44,6 +44,9 @@ void get_ss_bk()
 	TH1D *FA_tnpD[11];
 	TH1D *Eta_tnpD[11];
 
+	TH1D *FA_mass_range[11];
+	TH1D *Eta_mass_range[11];
+
 	// Data same sign
 
 	TH1D *FA_ss_nominal[11];
@@ -58,6 +61,9 @@ void get_ss_bk()
 	TH1D *FA_ss_tnpD[11];
 	TH1D *Eta_ss_tnpD[11];
 
+	TH1D *FA_ss_mass_range[11];
+	TH1D *Eta_ss_mass_range[11];
+
 	// MC signal
 	TH1D *FA_mc_nominal[11];
 	TH1D *Eta_mc_nominal[11];
@@ -65,16 +71,21 @@ void get_ss_bk()
 	TH1D *FA_mc_AcoOff[11];
 	TH1D *Eta_mc_AcoOff[11];
 
+	TH1D *FA_mc_mass_range[11];
+	TH1D *Eta_mc_mass_range[11];
+
 	// Ratio
 	TH1D *h_ratio_FA_nominal[11];
 	TH1D *h_ratio_FA_tnpU[11];
 	TH1D *h_ratio_FA_tnpD[11];
 	TH1D *h_ratio_FA_acooff[11];
+	TH1D *h_ratio_FA_mass_range[11];
 
 	TH1D *h_ratio_Eta_nominal[11];
 	TH1D *h_ratio_Eta_tnpU[11];
 	TH1D *h_ratio_Eta_tnpD[11];
 	TH1D *h_ratio_Eta_acooff[11];
+	TH1D *h_ratio_Eta_mass_range[11];
 
 	for (int i = 0; i < 11; i++)
 	{
@@ -82,6 +93,8 @@ void get_ss_bk()
 		Eta_mc_nominal[i] = (TH1D *)mc_file->Get(Form("Eta_nominal_%i", i));
 		FA_mc_AcoOff[i] = (TH1D *)mc_file->Get(Form("FA_AcoOff_%i", i));
 		Eta_mc_AcoOff[i] = (TH1D *)mc_file->Get(Form("Eta_AcoOff_%i", i));
+		FA_mc_mass_range[i] = (TH1D *)mc_file->Get(Form("FA_mass_range_%i", i));
+		Eta_mc_mass_range[i] = (TH1D *)mc_file->Get(Form("Eta_mass_range_%i", i));
 
 		FA_nominal[i] = (TH1D *)data_file->Get(Form("FA_nominal_%i", i));
 		Eta_nominal[i] = (TH1D *)data_file->Get(Form("Eta_nominal_%i", i));
@@ -91,6 +104,8 @@ void get_ss_bk()
 		Eta_tnpU[i] = (TH1D *)data_file->Get(Form("Eta_tnpU_%i", i));
 		FA_tnpD[i] = (TH1D *)data_file->Get(Form("FA_tnpD_%i", i));
 		Eta_tnpD[i] = (TH1D *)data_file->Get(Form("Eta_tnpD_%i", i));
+		FA_mass_range[i] = (TH1D *)data_file->Get(Form("FA_mass_range_%i", i));
+		Eta_mass_range[i] = (TH1D *)data_file->Get(Form("Eta_mass_range_%i", i));
 
 		FA_ss_nominal[i] = (TH1D *)data_file->Get(Form("FA_ss_nominal_%i", i));
 		Eta_ss_nominal[i] = (TH1D *)data_file->Get(Form("Eta_ss_nominal_%i", i));
@@ -100,20 +115,63 @@ void get_ss_bk()
 		Eta_ss_tnpU[i] = (TH1D *)data_file->Get(Form("Eta_ss_tnpU_%i", i));
 		FA_ss_tnpD[i] = (TH1D *)data_file->Get(Form("FA_ss_tnpD_%i", i));
 		Eta_ss_tnpD[i] = (TH1D *)data_file->Get(Form("Eta_ss_tnpD_%i", i));
+		FA_ss_mass_range[i] = (TH1D *)data_file->Get(Form("FA_ss_mass_range_%i", i));
+		Eta_ss_mass_range[i] = (TH1D *)data_file->Get(Form("Eta_ss_mass_range_%i", i));
 
 		h_ratio_FA_nominal[i] = new TH1D(Form("ratio_FA_nominal_%i", i), "", 120, 60, 120);
 		h_ratio_FA_tnpU[i] = new TH1D(Form("ratio_FA_tnpU_%i", i), "", 120, 60, 120);
 		h_ratio_FA_tnpD[i] = new TH1D(Form("ratio_FA_tnpD_%i", i), "", 120, 60, 120);
 		h_ratio_FA_acooff[i] = new TH1D(Form("ratio_FA_acooff_%i", i), "", 120, 60, 120);
+		h_ratio_FA_mass_range[i] = new TH1D(Form("ratio_FA_mass_range_%i", i), "", 80, 70, 110);
 
 		h_ratio_Eta_nominal[i] = new TH1D(Form("ratio_Eta_nominal_%i", i), "", 120, 60, 120);
 		h_ratio_Eta_tnpU[i] = new TH1D(Form("ratio_Eta_tnpU_%i", i), "", 120, 60, 120);
 		h_ratio_Eta_tnpD[i] = new TH1D(Form("ratio_Eta_tnpD_%i", i), "", 120, 60, 120);
 		h_ratio_Eta_acooff[i] = new TH1D(Form("ratio_Eta_acooff_%i", i), "", 120, 60, 120);
+		h_ratio_Eta_mass_range[i] = new TH1D(Form("ratio_Eta_mass_range_%i", i), "", 80, 70, 110);
 	}
 
 	for (int i = 0; i < 11; i++)
 	{
+		for (int j = 1; j <= 80; j++)
+		{
+			double content_mc_os_FA_mass_range = FA_mc_mass_range[i]->GetBinContent(j);
+			double content_data_os_FA_mass_range = FA_mass_range[i]->GetBinContent(j);
+			double content_data_ss_FA_mass_range = FA_ss_mass_range[i]->GetBinContent(j);
+			double ratio_FA_mass_range;
+
+			double content_mc_os_Eta_mass_range = Eta_mc_mass_range[i]->GetBinContent(j);
+			double content_data_os_Eta_mass_range = Eta_mass_range[i]->GetBinContent(j);
+			double content_data_ss_Eta_mass_range = Eta_ss_mass_range[i]->GetBinContent(j);
+			double ratio_Eta_mass_range;
+
+			if (content_data_os_FA_mass_range > 0)
+			{
+				ratio_FA_mass_range = content_data_ss_FA_mass_range / content_data_os_FA_mass_range;
+			}
+			else
+			{
+				ratio_FA_mass_range = 0;
+			}
+
+			if (content_data_os_Eta_mass_range > 0)
+			{
+				ratio_Eta_mass_range = content_data_ss_Eta_mass_range / content_data_os_Eta_mass_range;
+			}
+			else
+			{
+				ratio_Eta_mass_range = 0;
+			}
+
+			double estimate_mc_ss_FA_mass_range = content_mc_os_FA_mass_range * ratio_FA_mass_range;
+			double estimate_mc_ss_Eta_mass_range = content_mc_os_Eta_mass_range * ratio_Eta_mass_range;
+
+			if (estimate_mc_ss_FA_mass_range >= 0)
+				h_ratio_FA_mass_range[i]->SetBinContent(j, estimate_mc_ss_FA_mass_range);
+			if (estimate_mc_ss_Eta_mass_range >= 0)
+				h_ratio_Eta_mass_range[i]->SetBinContent(j, estimate_mc_ss_Eta_mass_range);
+
+		}
 		for (int j = 1; j <= 120; j++)
 		{
 
@@ -274,6 +332,8 @@ void get_ss_bk()
 		h_ratio_Eta_tnpD[i]->Write(Form("samesign_Eta_tnpD_%i", i), 2);
 		h_ratio_Eta_acooff[i]->Write(Form("samesign_Eta_acooff_%i", i), 2);
 
+		h_ratio_FA_mass_range[i]->Write(Form("samesign_FA_mass_range_%i", i), 2);
+		h_ratio_Eta_mass_range[i]->Write(Form("samesign_Eta_mass_range_%i", i), 2);
 	}
 	mc_file->Close();
 	data_file->Close();
