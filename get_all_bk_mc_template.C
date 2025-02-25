@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc_template(int type = 4)
+void get_all_bk_mc_template(int type = 20)
 {
 	// 1 = PbPb
 	// 2 = pp bk
@@ -43,6 +43,9 @@ void get_all_bk_mc_template(int type = 4)
 	// 16 = pp zoomin nominal_no_bk_sub
 	// 17 = pp zoomin nominal_binning
 	// 18 = pp zoomin nominal_range
+
+	// 19 = PbPb zoomin HF up
+	// 20 = PbPb zoomin HF down
 
 	MC_18 *s = new MC_18();
 
@@ -123,6 +126,18 @@ void get_all_bk_mc_template(int type = 4)
 		{
 			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_nominal_range_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
 			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_nominal_range_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+
+		else if (type == 19)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_HF_up_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_HF_up_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+		}
+
+		else if (type == 20)
+		{
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_HF_down_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_HF_down_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
 		}
 
 		// Zoom in pp
@@ -454,6 +469,11 @@ void get_all_bk_mc_template(int type = 4)
 		histogram_file = new TFile("./rootfile/template_pp_zoomin_nominal_binning.root", "UPDATE");
 	if (type == 18)
 		histogram_file = new TFile("./rootfile/template_pp_zoomin_nominal_range.root", "UPDATE");
+
+	if (type == 19)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_HF_up.root", "UPDATE");
+	if (type == 20)
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_HF_down.root", "UPDATE");
 
 	histogram_file->cd();
 

@@ -1,11 +1,13 @@
 #include "plotting_helper.h"
-void plot_normalize(int opt = 7)
+void plot_normalize(int opt = 8)
 {
 	// opt == 1 nominal
 	// opt == 2 tnpU
 	// opt == 3 tnpD
 	// opt == 4 Acooff
 	// opt == 6 Mass range
+	// opt == 7 HF up
+	// opt == 8 HF down
 
 	// now raw and eta are saved into same file, only differ by version
 
@@ -24,12 +26,16 @@ void plot_normalize(int opt = 7)
 	TFile *f_FA_tnpD = new TFile("./rootfile/normalized/FA_tnpD.root", "UPDATE");
 	TFile *f_FA_Acooff = new TFile("./rootfile/normalized/FA_acooff.root", "UPDATE");
 	TFile *f_FA_mass_range = new TFile("./rootfile/normalized/FA_mass_range.root", "UPDATE");
+	TFile *f_FA_HF_up = new TFile("./rootfile/normalized/FA_HF_up.root", "UPDATE");
+	TFile *f_FA_HF_down = new TFile("./rootfile/normalized/FA_HF_down.root", "UPDATE");
 
 	TFile *f_Eta_nominal = new TFile("./rootfile/normalized/Eta_nominal.root", "UPDATE");
 	TFile *f_Eta_tnpU = new TFile("./rootfile/normalized/Eta_tnpU.root", "UPDATE");
 	TFile *f_Eta_tnpD = new TFile("./rootfile/normalized/Eta_tnpD.root", "UPDATE");
 	TFile *f_Eta_Acooff = new TFile("./rootfile/normalized/Eta_acooff.root", "UPDATE");
 	TFile *f_Eta_mass_range = new TFile("./rootfile/normalized/Eta_mass_range.root", "UPDATE");
+	TFile *f_Eta_HF_up = new TFile("./rootfile/normalized/Eta_HF_up.root", "UPDATE");
+	TFile *f_Eta_HF_down = new TFile("./rootfile/normalized/Eta_HF_down.root", "UPDATE");
 
 	TH1D *h_FA_mcsignal[11];
 	TH1D *h_FA_mcW[11];
@@ -131,6 +137,38 @@ void plot_normalize(int opt = 7)
 			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_mass_range_%i", i));
 			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_mass_range_%i", i));
 			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_mass_range_%i", i));
+		}
+		if (opt == 7)
+		{
+			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_nominal_%i", i));
+			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_nominal_%i", i));
+			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_nominal_%i", i));
+			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_nominal_%i", i));
+			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_HF_up_%i", i));
+			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_HF_up_%i", i));
+
+			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_nominal_%i", i));
+			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_HF_up_%i", i));
+			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_HF_up_%i", i));
+		}
+		if (opt == 8)
+		{
+			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_nominal_%i", i));
+			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_nominal_%i", i));
+			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_nominal_%i", i));
+			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_nominal_%i", i));
+			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_HF_down_%i", i));
+			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_HF_down_%i", i));
+
+			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_nominal_%i", i));
+			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_nominal_%i", i));
+			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_HF_down_%i", i));
+			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_HF_down_%i", i));
 		}
 	}
 
@@ -308,6 +346,16 @@ void plot_normalize(int opt = 7)
 		{
 			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_mass_range);
 			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_mass_range);
+		}
+		if (opt == 7)
+		{
+			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_HF_up);
+			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_HF_up);
+		}
+		if (opt == 8)
+		{
+			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_HF_down);
+			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_HF_down);
 		}
 	}
 }

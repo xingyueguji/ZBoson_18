@@ -141,13 +141,13 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
   s1->Add(h_3, "HIST");
   s1->Add(h_2, "HIST");
   s1->Draw();
-  //s1->Draw("TEXTSAME");
+  // s1->Draw("TEXTSAME");
   s1->GetXaxis()->SetTitle("m_{#mu^{+}#mu^{-}} (GeV)");
   s1->GetXaxis()->CenterTitle();
   s1->GetYaxis()->SetTitle("Events / 4.0 GeV");
   s1->GetYaxis()->CenterTitle();
   h_1->Draw("SAME");
-  //h_1->Draw("SAMETEXT");
+  // h_1->Draw("SAMETEXT");
   legend->Draw("SAME");
 
   TLatex runinfo;
@@ -179,6 +179,10 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
       c1->SaveAs(Form("./newcomposite/eta/acooff/composite_%i.pdf", x));
     if (opt == 6)
       c1->SaveAs(Form("./newcomposite/eta/massrange/composite_%i.pdf", x));
+    if (opt == 7)
+      c1->SaveAs(Form("./newcomposite/eta/HFup/composite_%i.pdf", x));
+    if (opt == 8)
+      c1->SaveAs(Form("./newcomposite/eta/HFdown/composite_%i.pdf", x));
   }
   if (!isEta)
   {
@@ -192,6 +196,10 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
       c1->SaveAs(Form("./newcomposite/FA/acooff/composite_%i.pdf", x));
     if (opt == 6)
       c1->SaveAs(Form("./newcomposite/FA/massrange/composite_%i.pdf", x));
+    if (opt == 7)
+      c1->SaveAs(Form("./newcomposite/FA/HFup/composite_%i.pdf", x));
+    if (opt == 8)
+      c1->SaveAs(Form("./newcomposite/FA/HFdown/composite_%i.pdf", x));
   }
 }
 void plotting_helper::acoplot(TH1D *h_1, TH1D *h_2, int x, bool rapiditycut)
