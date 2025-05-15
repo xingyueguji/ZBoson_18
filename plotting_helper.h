@@ -105,7 +105,9 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
   h_5->SetOption("HIST");
   h_6->SetOption("HIST");
 
-  for (int i = 1; i <= 30; i++)
+  int nbins = h_1->GetNbinsX();
+
+  for (int i = 1; i <= nbins; i++)
   {
     if (h_2->GetBinContent(i) < 0)
       cout << "Negative in h_2!" << endl;

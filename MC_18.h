@@ -1,3 +1,5 @@
+#pragma once
+
 #include "TMath.h"
 // Header file for ROOT classes
 #include <TROOT.h>
@@ -22,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <map>
+
 
 typedef std::vector<std::vector<UChar_t>> UCharVecVec;
 
@@ -137,6 +140,9 @@ public:
 	Short_t RecIdx_gen[5000] = {};
 	Short_t chargeD1_gen[5000] = {};
 	Short_t chargeD2_gen[5000] = {};
+	Int_t MotherID_gen[5000] = {};
+	Short_t status_gen[5000] = {};
+	Bool_t matchGEN[5000] = {};
 
 	Int_t nentries = 0;
 
@@ -390,6 +396,10 @@ void MC_18::SetupBranches(Int_t x)
 		t1->SetBranchStatus("trigHLT", 1);
 		t1->SetBranchStatus("chargeD1_gen", 1);
 		t1->SetBranchStatus("chargeD2_gen", 1);
+		t1->SetBranchStatus("MotherID_gen",1);
+		t1->SetBranchStatus("status_gen",1);
+		t1->SetBranchStatus("matchGEN",1);
+
 		// Link to variables
 		t1->SetBranchAddress("candSize", &candSize);
 		t1->SetBranchAddress("centrality", &centrality);
@@ -454,6 +464,9 @@ void MC_18::SetupBranches(Int_t x)
 		t1->SetBranchAddress("trigHLT", trigHLT);
 		t1->SetBranchAddress("chargeD1_gen", chargeD1_gen);
 		t1->SetBranchAddress("chargeD2_gen", chargeD2_gen);
+		t1->SetBranchAddress("MotherID_gen",MotherID_gen);
+		t1->SetBranchAddress("status_gen",status_gen);
+		t1->SetBranchAddress("matchGEN",matchGEN);
 	}
 }
 /*bool MC_18::SetupCut(){

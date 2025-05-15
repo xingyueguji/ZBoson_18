@@ -199,9 +199,9 @@ void get_mc_eff()
 			if (!isOppositeSign)
 				continue;
 
-			float scaleFactor = tnp->getZSF(mc_signal_obj->pTD1_gen[j], mc_signal_obj->EtaD1_gen[j], mc_signal_obj->pTD2_gen[j], mc_signal_obj->EtaD2_gen[j], (int)(hiBin / 2), 0);
-			float scaleFactorU = tnp->getZSF(mc_signal_obj->pTD1_gen[j], mc_signal_obj->EtaD1_gen[j], mc_signal_obj->pTD2_gen[j], mc_signal_obj->EtaD2_gen[j], (int)(hiBin / 2), 1);
-			float scaleFactorD = tnp->getZSF(mc_signal_obj->pTD1_gen[j], mc_signal_obj->EtaD1_gen[j], mc_signal_obj->pTD2_gen[j], mc_signal_obj->EtaD2_gen[j], (int)(hiBin / 2), -1);
+			float scaleFactor = tnp->getZSF(mc_signal_obj->pTD1_gen[j], mc_signal_obj->EtaD1_gen[j], mc_signal_obj->pTD2_gen[j], mc_signal_obj->EtaD2_gen[j], (int)(hiBin / 2), 0, true);
+			float scaleFactorU = tnp->getZSF(mc_signal_obj->pTD1_gen[j], mc_signal_obj->EtaD1_gen[j], mc_signal_obj->pTD2_gen[j], mc_signal_obj->EtaD2_gen[j], (int)(hiBin / 2), 1, true);
+			float scaleFactorD = tnp->getZSF(mc_signal_obj->pTD1_gen[j], mc_signal_obj->EtaD1_gen[j], mc_signal_obj->pTD2_gen[j], mc_signal_obj->EtaD2_gen[j], (int)(hiBin / 2), -1, true);
 
 			for (int k = 0; k < mc_signal_obj->centarraysize; k++)
 			{

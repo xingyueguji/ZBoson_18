@@ -1,5 +1,5 @@
 #include "plotting_helper.h"
-void plot_normalize(int opt = 8)
+void plot_normalize(int opt = 6)
 {
 	// opt == 1 nominal
 	// opt == 2 tnpU
@@ -201,6 +201,8 @@ void plot_normalize(int opt = 8)
 
 	for (int i = 0; i < 11; i++)
 	{
+		if (!((i < 4) || (i == 10)))
+			continue;
 		ovo->fixnegativebin(h_FA_mcsignal[i]);
 		ovo->fixnegativebin(h_FA_mcW[i]);
 		ovo->fixnegativebin(h_FA_mctt[i]);

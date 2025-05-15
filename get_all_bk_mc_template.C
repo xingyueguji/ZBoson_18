@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc_template(int type = 20)
+void get_all_bk_mc_template(int type = 1)
 {
 	// 1 = PbPb
 	// 2 = pp bk
@@ -51,10 +51,6 @@ void get_all_bk_mc_template(int type = 20)
 
 	auto start = std::chrono::high_resolution_clock::now();
 	TH1::SetDefaultSumw2();
-	// opt == 1 means signal MC;
-	// opt == 2 means W;
-	// opt == 3 means tt;
-	// dont have to worry about starlight
 
 	const int nbins_mass_shift = 42;
 	const int nbins_smear = 42;
@@ -191,6 +187,19 @@ void get_all_bk_mc_template(int type = 20)
 	TH1D *template_Eta_acooff[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *template_Eta_mass_range[nbins_mass_shift][nbins_smear][nbins_cent];
 
+	TH1D *template_FA_nominal_vaccum[nbins_cent];
+	TH1D *template_Eta_nominal_vaccum[nbins_cent];
+
+	TH1D *Fake_FA_nominal[nbins_cent];
+
+	TH1D *Fake_FA_pT[nbins_cent];
+	TH1D *Fake_FA_Eta[nbins_cent];
+	TH1D *Fake_FA_Phi[nbins_cent];
+
+	TH1D *Normal_FA_pT[nbins_cent];
+	TH1D *Normal_FA_Eta[nbins_cent];
+	TH1D *Normal_FA_Phi[nbins_cent];
+
 	for (int i = 0; i < nbins_mass_shift; ++i)
 	{
 		for (int j = 0; j < nbins_smear; j++)
@@ -211,6 +220,21 @@ void get_all_bk_mc_template(int type = 20)
 				template_Eta_mass_range[i][j][k] = new TH1D(Form("template_Eta_mass_range_%i_%i_%i", i, j, k), "", 80, 70, 110);
 			}
 		}
+	}
+
+	for (int i = 0; i < nbins_cent; i++)
+	{
+		template_FA_nominal_vaccum[i] = new TH1D(Form("template_FA_nominal_vaccum_%i", i), "", 120, 60, 120);
+		template_Eta_nominal_vaccum[i] = new TH1D(Form("template_Eta_nominal_vaccum_%i", i), "", 120, 60, 120);
+		Fake_FA_nominal[i] = new TH1D(Form("Fake_FA_nominal_%i", i), "", 120, 60, 120);
+
+		Fake_FA_pT[i] = new TH1D(Form("Fake_FA_pT_%i", i), "", 50, 0, 200);
+		Fake_FA_Eta[i] = new TH1D(Form("Fake_FA_Eta_%i", i), "", 20, -2.4, 2.4);
+		Fake_FA_Phi[i] = new TH1D(Form("Fake_FA_Phi_%i", i), "", 20, 0, 2 * 3.14);
+
+		Normal_FA_pT[i] = new TH1D(Form("Normal_FA_pT_%i", i), "", 50, 0, 200);
+		Normal_FA_Eta[i] = new TH1D(Form("Normal_FA_Eta_%i", i), "", 20, -2.4, 2.4);
+		Normal_FA_Phi[i] = new TH1D(Form("Normal_FA_Phi_%i", i), "", 20, -3.14, 3.14);
 	}
 
 	gSystem->Load("./header/libDict.so");
@@ -360,8 +384,50 @@ void get_all_bk_mc_template(int type = 20)
 					}
 				}
 
+				for (int k = 0; k < s->centarraysize; k++)
+				{
+					if (!((k < 4) || (k == 10)))
+						continue;
+					if (centbinpositioncounter[k] != 0)
+					{
+						if (!isTau)
+						{
+							if (passesAco[0])
+							{
+								if (isgenmatching)
+								{
+									double gen_mass = s->Calc_Z_gen(matchedgenindex);
+									double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+
+									Normal_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
+									Normal_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
+									Normal_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
+
+									if (gen_mass <= 60 || gen_mass >= 120)
+									{
+										Fake_FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+										Fake_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
+										Fake_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
+										Fake_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
+									}
+								}
+								else
+								{
+									double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+									Fake_FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+									Fake_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
+									Fake_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
+									Fake_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
+								}
+							}
+						}
+					}
+				}
+
 				if (!isgenmatching)
+				{
 					continue;
+				}
 
 				for (int k = 0; k < s->centarraysize; k++)
 				{
@@ -376,6 +442,8 @@ void get_all_bk_mc_template(int type = 20)
 								double gen_mass = s->Calc_Z_gen(matchedgenindex);
 								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 
+								template_FA_nominal_vaccum[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+
 								for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
 								{
 									for (int smear = 0; smear < nbins_smear; smear++)
@@ -388,6 +456,8 @@ void get_all_bk_mc_template(int type = 20)
 
 								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 								{
+									template_Eta_nominal_vaccum[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+
 									for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
 									{
 										for (int smear = 0; smear < nbins_smear; smear++)
@@ -481,6 +551,16 @@ void get_all_bk_mc_template(int type = 20)
 	{
 		if (!((i < 4) || (i == 10)))
 			continue;
+
+		template_FA_nominal_vaccum[i]->Write("", 2);
+		template_Eta_nominal_vaccum[i]->Write("", 2);
+		Fake_FA_nominal[i]->Write("", 2);
+		Fake_FA_pT[i]->Write("", 2);
+		Fake_FA_Eta[i]->Write("", 2);
+		Fake_FA_Phi[i]->Write("", 2);
+		Normal_FA_pT[i]->Write("", 2);
+		Normal_FA_Eta[i]->Write("", 2);
+		Normal_FA_Phi[i]->Write("", 2);
 
 		for (int j = 0; j < nbins_mass_shift; j++)
 		{
