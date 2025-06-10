@@ -41,7 +41,7 @@ void get_data()
 	TEfficiency *e[11];
 	TEfficiency *e_up[11];
 	TEfficiency *e_down[11];
-	TEfficiency *e_acooff[11];
+	TEfficiency *e_acoon[11];
 
 	TFile *eff_f1 = new TFile("./rootfile/mc_eff.root", "READ");
 	for (int i = 0; i < 11; i++)
@@ -49,14 +49,14 @@ void get_data()
 		e[i] = (TEfficiency *)eff_f1->Get(Form("eff_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
 		e_up[i] = (TEfficiency *)eff_f1->Get(Form("eff_U_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
 		e_down[i] = (TEfficiency *)eff_f1->Get(Form("eff_D_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
-		e_acooff[i] = (TEfficiency *)eff_f1->Get(Form("eff_noAco_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
+		e_acoon[i] = (TEfficiency *)eff_f1->Get(Form("eff_withAco_%i_%i", data->cenlowlimit[i], data->cenhighlimit[i]));
 	}
 
 	TH1D *FA_nominal[11];
 	TH1D *Eta_nominal[11];
 
-	TH1D *FA_AcoOff[11];
-	TH1D *Eta_AcoOff[11];
+	TH1D *FA_AcoOn[11];
+	TH1D *Eta_AcoOn[11];
 
 	TH1D *FA_tnpU[11];
 	TH1D *Eta_tnpU[11];
@@ -70,8 +70,8 @@ void get_data()
 	TH1D *FA_ss_nominal[11];
 	TH1D *Eta_ss_nominal[11];
 
-	TH1D *FA_ss_AcoOff[11];
-	TH1D *Eta_ss_AcoOff[11];
+	TH1D *FA_ss_AcoOn[11];
+	TH1D *Eta_ss_AcoOn[11];
 
 	TH1D *FA_ss_tnpU[11];
 	TH1D *Eta_ss_tnpU[11];
@@ -101,8 +101,8 @@ void get_data()
 	{
 		FA_nominal[i] = new TH1D(Form("FA_nominal_%i", i), "", 120, 60, 120);
 		Eta_nominal[i] = new TH1D(Form("Eta_nominal_%i", i), "", 120, 60, 120);
-		FA_AcoOff[i] = new TH1D(Form("FA_AcoOff_%i", i), "", 120, 60, 120);
-		Eta_AcoOff[i] = new TH1D(Form("Eta_AcoOff_%i", i), "", 120, 60, 120);
+		FA_AcoOn[i] = new TH1D(Form("FA_AcoOn_%i", i), "", 120, 60, 120);
+		Eta_AcoOn[i] = new TH1D(Form("Eta_AcoOn_%i", i), "", 120, 60, 120);
 		FA_tnpU[i] = new TH1D(Form("FA_tnpU_%i", i), "", 120, 60, 120);
 		Eta_tnpU[i] = new TH1D(Form("Eta_tnpU_%i", i), "", 120, 60, 120);
 		FA_tnpD[i] = new TH1D(Form("FA_tnpD_%i", i), "", 120, 60, 120);
@@ -116,8 +116,8 @@ void get_data()
 
 		FA_ss_nominal[i] = new TH1D(Form("FA_ss_nominal_%i", i), "", 120, 60, 120);
 		Eta_ss_nominal[i] = new TH1D(Form("Eta_ss_nominal_%i", i), "", 120, 60, 120);
-		FA_ss_AcoOff[i] = new TH1D(Form("FA_ss_AcoOff_%i", i), "", 120, 60, 120);
-		Eta_ss_AcoOff[i] = new TH1D(Form("Eta_ss_AcoOff_%i", i), "", 120, 60, 120);
+		FA_ss_AcoOn[i] = new TH1D(Form("FA_ss_AcoOn_%i", i), "", 120, 60, 120);
+		Eta_ss_AcoOn[i] = new TH1D(Form("Eta_ss_AcoOn_%i", i), "", 120, 60, 120);
 		FA_ss_tnpU[i] = new TH1D(Form("FA_ss_tnpU_%i", i), "", 120, 60, 120);
 		Eta_ss_tnpU[i] = new TH1D(Form("Eta_ss_tnpU_%i", i), "", 120, 60, 120);
 		FA_ss_tnpD[i] = new TH1D(Form("FA_ss_tnpD_%i", i), "", 120, 60, 120);
@@ -204,82 +204,76 @@ void get_data()
 
 			// Here's for generate pT spectrum of PbPb
 
-			if (passesAco[0])
+			double efficiency = data->getEfficiency(e[10], data->y[j], data->pT[j]);
+			pT_spec_FA->Fill(data->pT[j], 1.0 / efficiency);
+			if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
 			{
 				double efficiency = data->getEfficiency(e[10], data->y[j], data->pT[j]);
-				pT_spec_FA->Fill(data->pT[j], 1.0 / efficiency);
-				if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
-				{
-					double efficiency = data->getEfficiency(e[10], data->y[j], data->pT[j]);
-					pT_spec_Eta->Fill(data->pT[j], 1.0 / efficiency);
-				}
+				pT_spec_Eta->Fill(data->pT[j], 1.0 / efficiency);
 			}
 
 			for (int k = 0; k < data->centarraysize; k++)
 			{
 				if (centbinpositioncounter[k] != 0)
 				{
-					if (passesAco[0])
+					double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
+					double efficiency_up = data->getEfficiency(e_up[k], data->y[j], data->pT[j]);
+					double efficiency_down = data->getEfficiency(e_down[k], data->y[j], data->pT[j]);
+
+					FA_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
+					FA_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
+					FA_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
+					FA_mass_range[k]->Fill(data->mass[j], 1.0 / efficiency);
+
+					// with eta cut < 1 on both D1 and D2 muons
+					if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
 					{
 						double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
 						double efficiency_up = data->getEfficiency(e_up[k], data->y[j], data->pT[j]);
 						double efficiency_down = data->getEfficiency(e_down[k], data->y[j], data->pT[j]);
-
-						FA_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
-						FA_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
-						FA_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
-						FA_mass_range[k]->Fill(data->mass[j], 1.0 / efficiency);
-
-						// with eta cut < 1 on both D1 and D2 muons
-						if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
-						{
-							double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-							double efficiency_up = data->getEfficiency(e_up[k], data->y[j], data->pT[j]);
-							double efficiency_down = data->getEfficiency(e_down[k], data->y[j], data->pT[j]);
-							Eta_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
-							Eta_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
-							Eta_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
-							Eta_mass_range[k]->Fill(data->mass[j], 1.0 / efficiency);
-						}
+						Eta_nominal[k]->Fill(data->mass[j], 1.0 / efficiency);
+						Eta_tnpU[k]->Fill(data->mass[j], 1.0 / efficiency_up);
+						Eta_tnpD[k]->Fill(data->mass[j], 1.0 / efficiency_down);
+						Eta_mass_range[k]->Fill(data->mass[j], 1.0 / efficiency);
 					}
 
-					double efficiency_acooff = data->getEfficiency(e_acooff[k], data->y[j], data->pT[j]);
-					FA_AcoOff[k]->Fill(data->mass[j], 1.0 / efficiency_acooff);
-
-					if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
+					if (passesAco[0])
 					{
-						double efficiency_acooff = data->getEfficiency(e_acooff[k], data->y[j], data->pT[j]);
-						Eta_AcoOff[k]->Fill(data->mass[j], 1.0 / efficiency_acooff);
+
+						double efficiency_acoon = data->getEfficiency(e_acoon[k], data->y[j], data->pT[j]);
+						FA_AcoOn[k]->Fill(data->mass[j], 1.0 / efficiency_acoon);
+
+						if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
+						{
+							double efficiency_acoon = data->getEfficiency(e_acoon[k], data->y[j], data->pT[j]);
+							Eta_AcoOn[k]->Fill(data->mass[j], 1.0 / efficiency_acoon);
+						}
 					}
 				}
 				if (centbinpositioncounter_UP[k] != 0)
 				{
-					if (passesAco[0])
+
+					double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
+					FA_HF_up[k]->Fill(data->mass[j], 1.0 / efficiency);
+
+					// with eta cut < 1 on both D1 and D2 muons
+					if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
 					{
 						double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-						FA_HF_up[k]->Fill(data->mass[j], 1.0 / efficiency);
-
-						// with eta cut < 1 on both D1 and D2 muons
-						if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
-						{
-							double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-							Eta_HF_up[k]->Fill(data->mass[j], 1.0 / efficiency);
-						}
+						Eta_HF_up[k]->Fill(data->mass[j], 1.0 / efficiency);
 					}
 				}
 				if (centbinpositioncounter_DOWN[k] != 0)
 				{
-					if (passesAco[0])
+
+					double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
+					FA_HF_down[k]->Fill(data->mass[j], 1.0 / efficiency);
+
+					// with eta cut < 1 on both D1 and D2 muons
+					if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
 					{
 						double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-						FA_HF_down[k]->Fill(data->mass[j], 1.0 / efficiency);
-
-						// with eta cut < 1 on both D1 and D2 muons
-						if ((abs(data->EtaD1[j]) < 1) && (abs(data->EtaD2[j]) < 1))
-						{
-							double efficiency = data->getEfficiency(e[k], data->y[j], data->pT[j]);
-							Eta_HF_down[k]->Fill(data->mass[j], 1.0 / efficiency);
-						}
+						Eta_HF_down[k]->Fill(data->mass[j], 1.0 / efficiency);
 					}
 				}
 			}
@@ -362,67 +356,64 @@ void get_data()
 			{
 				if (centbinpositioncounter[k] != 0)
 				{
-					if (passesAco[0])
+
+					double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
+					double efficiency_up = data_same_sign->getEfficiency(e_up[k], data_same_sign->y[j], data_same_sign->pT[j]);
+					double efficiency_down = data_same_sign->getEfficiency(e_down[k], data_same_sign->y[j], data_same_sign->pT[j]);
+
+					FA_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+					FA_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
+					FA_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
+					FA_ss_mass_range[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+
+					// with eta cut < 1 on both D1 and D2 muons
+					if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
 					{
 						double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
 						double efficiency_up = data_same_sign->getEfficiency(e_up[k], data_same_sign->y[j], data_same_sign->pT[j]);
 						double efficiency_down = data_same_sign->getEfficiency(e_down[k], data_same_sign->y[j], data_same_sign->pT[j]);
+						Eta_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+						Eta_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
+						Eta_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
+						Eta_ss_mass_range[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+					}
+					if (passesAco[0])
+					{
 
-						FA_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
-						FA_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
-						FA_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
-						FA_ss_mass_range[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+						double efficiency_acoon = data_same_sign->getEfficiency(e_acoon[k], data_same_sign->y[j], data_same_sign->pT[j]);
+						FA_ss_AcoOn[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_acoon);
 
-						// with eta cut < 1 on both D1 and D2 muons
 						if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
 						{
-							double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
-							double efficiency_up = data_same_sign->getEfficiency(e_up[k], data_same_sign->y[j], data_same_sign->pT[j]);
-							double efficiency_down = data_same_sign->getEfficiency(e_down[k], data_same_sign->y[j], data_same_sign->pT[j]);
-							Eta_ss_nominal[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
-							Eta_ss_tnpU[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_up);
-							Eta_ss_tnpD[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_down);
-							Eta_ss_mass_range[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+							double efficiency_acoon = data_same_sign->getEfficiency(e_acoon[k], data_same_sign->y[j], data_same_sign->pT[j]);
+							Eta_ss_AcoOn[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_acoon);
 						}
-					}
-
-					double efficiency_acooff = data_same_sign->getEfficiency(e_acooff[k], data_same_sign->y[j], data_same_sign->pT[j]);
-					FA_ss_AcoOff[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_acooff);
-
-					if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
-					{
-						double efficiency_acooff = data_same_sign->getEfficiency(e_acooff[k], data_same_sign->y[j], data_same_sign->pT[j]);
-						Eta_ss_AcoOff[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency_acooff);
 					}
 				}
 				if (centbinpositioncounter_UP[k] != 0)
 				{
-					if (passesAco[0])
+
+					double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
+					FA_ss_HF_up[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+
+					// with eta cut < 1 on both D1 and D2 muons
+					if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
 					{
 						double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
-						FA_ss_HF_up[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
-
-						// with eta cut < 1 on both D1 and D2 muons
-						if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
-						{
-							double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
-							Eta_ss_HF_up[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
-						}
+						Eta_ss_HF_up[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
 					}
 				}
 				if (centbinpositioncounter_DOWN[k] != 0)
 				{
-					if (passesAco[0])
+
+					double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
+					FA_ss_HF_down[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
+
+					// with eta cut < 1 on both D1 and D2 muons
+					if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
 					{
 						double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
-						FA_ss_HF_down[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
-
-						// with eta cut < 1 on both D1 and D2 muons
-						if ((abs(data_same_sign->EtaD1[j]) < 1) && (abs(data_same_sign->EtaD2[j]) < 1))
-						{
-							double efficiency = data_same_sign->getEfficiency(e[k], data_same_sign->y[j], data_same_sign->pT[j]);
-							Eta_ss_HF_down[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
-						}
+						Eta_ss_HF_down[k]->Fill(data_same_sign->mass[j], 1.0 / efficiency);
 					}
 				}
 			}
@@ -436,8 +427,8 @@ void get_data()
 	{
 		FA_nominal[i]->Write("", 2);
 		Eta_nominal[i]->Write("", 2);
-		FA_AcoOff[i]->Write("", 2);
-		Eta_AcoOff[i]->Write("", 2);
+		FA_AcoOn[i]->Write("", 2);
+		Eta_AcoOn[i]->Write("", 2);
 		FA_tnpU[i]->Write("", 2);
 		Eta_tnpU[i]->Write("", 2);
 		FA_tnpD[i]->Write("", 2);
@@ -451,8 +442,8 @@ void get_data()
 
 		FA_ss_nominal[i]->Write("", 2);
 		Eta_ss_nominal[i]->Write("", 2);
-		FA_ss_AcoOff[i]->Write("", 2);
-		Eta_ss_AcoOff[i]->Write("", 2);
+		FA_ss_AcoOn[i]->Write("", 2);
+		Eta_ss_AcoOn[i]->Write("", 2);
 		FA_ss_tnpU[i]->Write("", 2);
 		Eta_ss_tnpU[i]->Write("", 2);
 		FA_ss_tnpD[i]->Write("", 2);

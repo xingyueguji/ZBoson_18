@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc_template(int type = 1)
+void get_all_bk_mc_template(int type = 5)
 {
 	// 1 = PbPb
 	// 2 = pp bk
@@ -31,7 +31,7 @@ void get_all_bk_mc_template(int type = 1)
 	// 5 = PbPb zoomin nominal
 	// 6 = PbPb zoomin tnpD
 	// 7 = PbPb zoomin tnpU
-	// 8 = PbPb zoomin acooff
+	// 8 = PbPb zoomin acoon
 	// 9 = PbPb zoomin nominal_no_bk_sub
 	// 10 = PbPb zoomin nominal_binning
 	// 11 = PbPb zoomin nominal_range
@@ -39,13 +39,15 @@ void get_all_bk_mc_template(int type = 1)
 	// 12 = pp zoomin nominal
 	// 13 = pp zoomin tnpD
 	// 14 = pp zoomin tnpU
-	// 15 = pp zoomin acooff
+	// 15 = pp zoomin acoon
 	// 16 = pp zoomin nominal_no_bk_sub
 	// 17 = pp zoomin nominal_binning
 	// 18 = pp zoomin nominal_range
 
 	// 19 = PbPb zoomin HF up
 	// 20 = PbPb zoomin HF down
+
+	cout << "This is running option " << type << endl;
 
 	MC_18 *s = new MC_18();
 
@@ -105,8 +107,8 @@ void get_all_bk_mc_template(int type = 1)
 		}
 		else if (type == 8)
 		{
-			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_acooff_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
-			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_acooff_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin/PbPb_FA_acoon_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin/PbPb_eta_acoon_%i_%i.root", s->cenlowlimit[i], s->cenhighlimit[i]), "READ");
 		}
 		else if (type == 9)
 		{
@@ -155,8 +157,8 @@ void get_all_bk_mc_template(int type = 1)
 		}
 		else if (type == 15)
 		{
-			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_acooff_%i.root", 22), "READ");
-			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_acooff_%i.root", 22), "READ");
+			ratio_file_raw[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_FA_acoon_%i.root", 22), "READ");
+			ratio_file_eta[i] = new TFile(Form("../bwgaus/zoomin_pp/pp_eta_acoon_%i.root", 22), "READ");
 		}
 		else if (type == 16)
 		{
@@ -180,11 +182,11 @@ void get_all_bk_mc_template(int type = 1)
 	TF1 *t_ratio_eta[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	TH1D *template_FA_nominal[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *template_FA_acooff[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *template_FA_acoon[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *template_FA_mass_range[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	TH1D *template_Eta_nominal[nbins_mass_shift][nbins_smear][nbins_cent];
-	TH1D *template_Eta_acooff[nbins_mass_shift][nbins_smear][nbins_cent];
+	TH1D *template_Eta_acoon[nbins_mass_shift][nbins_smear][nbins_cent];
 	TH1D *template_Eta_mass_range[nbins_mass_shift][nbins_smear][nbins_cent];
 
 	TH1D *template_FA_nominal_vaccum[nbins_cent];
@@ -212,9 +214,9 @@ void get_all_bk_mc_template(int type = 1)
 				t_ratio_eta[i][j][k] = (TF1 *)ratio_file_eta[k]->Get(Form(ratio_name, i, j));
 
 				template_FA_nominal[i][j][k] = new TH1D(Form("template_FA_nominal_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				template_FA_acooff[i][j][k] = new TH1D(Form("template_FA_acooff_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				template_FA_acoon[i][j][k] = new TH1D(Form("template_FA_acoon_%i_%i_%i", i, j, k), "", 120, 60, 120);
 				template_Eta_nominal[i][j][k] = new TH1D(Form("template_Eta_nominal_%i_%i_%i", i, j, k), "", 120, 60, 120);
-				template_Eta_acooff[i][j][k] = new TH1D(Form("template_Eta_acooff_%i_%i_%i", i, j, k), "", 120, 60, 120);
+				template_Eta_acoon[i][j][k] = new TH1D(Form("template_Eta_acoon_%i_%i_%i", i, j, k), "", 120, 60, 120);
 
 				template_FA_mass_range[i][j][k] = new TH1D(Form("template_FA_mass_range_%i_%i_%i", i, j, k), "", 80, 70, 110);
 				template_Eta_mass_range[i][j][k] = new TH1D(Form("template_Eta_mass_range_%i_%i_%i", i, j, k), "", 80, 70, 110);
@@ -247,13 +249,13 @@ void get_all_bk_mc_template(int type = 1)
 	s->SetupBranches(0);
 
 	TEfficiency *e[11];
-	TEfficiency *e_acooff[11];
+	TEfficiency *e_acoon[11];
 
 	TFile *eff_f1 = new TFile("./rootfile/mc_eff.root", "READ");
 	for (int i = 0; i < 11; i++)
 	{
 		e[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
-		e_acooff[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_noAco_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
+		e_acoon[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_withAco_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
 	}
 
 	// Histogram setup
@@ -384,7 +386,7 @@ void get_all_bk_mc_template(int type = 1)
 					}
 				}
 
-				for (int k = 0; k < s->centarraysize; k++)
+				/*for (int k = 0; k < s->centarraysize; k++)
 				{
 					if (!((k < 4) || (k == 10)))
 						continue;
@@ -422,11 +424,11 @@ void get_all_bk_mc_template(int type = 1)
 							}
 						}
 					}
-				}
+				}*/
 
 				if (!isgenmatching)
 				{
-					continue;
+					// continue;
 				}
 
 				for (int k = 0; k < s->centarraysize; k++)
@@ -437,7 +439,11 @@ void get_all_bk_mc_template(int type = 1)
 					{
 						if (!isTau)
 						{
-							if (passesAco[0])
+
+							// Here's Nominal, without Aco cut
+							// I am going to solve "fake" issue here, to see if it works.
+
+							if (isgenmatching)
 							{
 								double gen_mass = s->Calc_Z_gen(matchedgenindex);
 								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
@@ -469,27 +475,87 @@ void get_all_bk_mc_template(int type = 1)
 									}
 								}
 							}
-
-							double gen_mass = s->Calc_Z_gen(matchedgenindex);
-							double efficiency_acooff = s->getEfficiency(e_acooff[k], s->y[j], s->pT[j]);
-
-							for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+							else
 							{
-								for (int smear = 0; smear < nbins_smear; smear++)
-								{
-									double ratio_weight = t_ratio_raw[massshift][smear][k]->Eval(gen_mass);
-									template_FA_acooff[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight * ratio_weight);
-								}
-							}
+								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+								template_FA_nominal_vaccum[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
-							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
-							{
 								for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
 								{
 									for (int smear = 0; smear < nbins_smear; smear++)
 									{
-										double ratio_weight = t_ratio_eta[massshift][smear][k]->Eval(gen_mass);
-										template_Eta_acooff[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight * ratio_weight);
+										template_FA_nominal[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+										template_FA_mass_range[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+									}
+								}
+
+								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+								{
+									template_Eta_nominal_vaccum[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+
+									for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+									{
+										for (int smear = 0; smear < nbins_smear; smear++)
+										{
+											template_Eta_nominal[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+											template_Eta_mass_range[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+										}
+									}
+								}
+							}
+
+							// Here's Aco systematic
+
+							if (passesAco[0])
+							{
+
+								if (isgenmatching)
+								{
+									double gen_mass = s->Calc_Z_gen(matchedgenindex);
+									double efficiency_acoon = s->getEfficiency(e_acoon[k], s->y[j], s->pT[j]);
+
+									for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+									{
+										for (int smear = 0; smear < nbins_smear; smear++)
+										{
+											double ratio_weight = t_ratio_raw[massshift][smear][k]->Eval(gen_mass);
+											template_FA_acoon[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight * ratio_weight);
+										}
+									}
+
+									if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+									{
+										for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+										{
+											for (int smear = 0; smear < nbins_smear; smear++)
+											{
+												double ratio_weight = t_ratio_eta[massshift][smear][k]->Eval(gen_mass);
+												template_Eta_acoon[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight * ratio_weight);
+											}
+										}
+									}
+								}
+								else
+								{
+									double efficiency_acoon = s->getEfficiency(e_acoon[k], s->y[j], s->pT[j]);
+
+									for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+									{
+										for (int smear = 0; smear < nbins_smear; smear++)
+										{
+											template_FA_acoon[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight);
+										}
+									}
+
+									if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+									{
+										for (int massshift = 0; massshift < nbins_mass_shift; massshift++)
+										{
+											for (int smear = 0; smear < nbins_smear; smear++)
+											{
+												template_Eta_acoon[massshift][smear][k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight);
+											}
+										}
 									}
 								}
 							}
@@ -517,7 +583,7 @@ void get_all_bk_mc_template(int type = 1)
 	if (type == 7)
 		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_tnpD.root", "UPDATE");
 	if (type == 8)
-		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_acooff.root", "UPDATE");
+		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_acoon.root", "UPDATE");
 	if (type == 9)
 		histogram_file = new TFile("./rootfile/template_PbPb_zoomin_nominal_no_bksub.root", "UPDATE");
 	if (type == 10)
@@ -532,7 +598,7 @@ void get_all_bk_mc_template(int type = 1)
 	if (type == 14)
 		histogram_file = new TFile("./rootfile/template_pp_zoomin_tnpD.root", "UPDATE");
 	if (type == 15)
-		histogram_file = new TFile("./rootfile/template_pp_zoomin_acooff.root", "UPDATE");
+		histogram_file = new TFile("./rootfile/template_pp_zoomin_acoon.root", "UPDATE");
 	if (type == 16)
 		histogram_file = new TFile("./rootfile/template_pp_zoomin_nominal_no_bksub.root", "UPDATE");
 	if (type == 17)
@@ -567,9 +633,9 @@ void get_all_bk_mc_template(int type = 1)
 			for (int k = 0; k < nbins_smear; k++)
 			{
 				template_FA_nominal[j][k][i]->Write("", 2);
-				template_FA_acooff[j][k][i]->Write("", 2);
+				template_FA_acoon[j][k][i]->Write("", 2);
 				template_Eta_nominal[j][k][i]->Write("", 2);
-				template_Eta_acooff[j][k][i]->Write("", 2);
+				template_Eta_acoon[j][k][i]->Write("", 2);
 				template_FA_mass_range[j][k][i]->Write("", 2);
 				template_Eta_mass_range[j][k][i]->Write("", 2);
 			}

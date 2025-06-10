@@ -215,36 +215,34 @@ void get_all_bk_mc_fake(int type = 1)
                     {
                         if (!isTau)
                         {
-                            if (passesAco[0])
+
+                            if (isgenmatching)
                             {
-                                if (isgenmatching)
-                                {
-                                    double gen_mass = s->Calc_Z_gen(matchedgenindex);
-                                    double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+                                double gen_mass = s->Calc_Z_gen(matchedgenindex);
+                                double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
 
-                                    Normal_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
-                                    Normal_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
-                                    Normal_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
-                                    Normal_FA_y[k]->Fill(s->y[j], 1.0 / efficiency * eventweight);
+                                Normal_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
+                                Normal_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
+                                Normal_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
+                                Normal_FA_y[k]->Fill(s->y[j], 1.0 / efficiency * eventweight);
 
-                                    if (gen_mass <= 60 || gen_mass >= 120)
-                                    {
-                                        Fake_FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-                                        Fake_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
-                                        Fake_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
-                                        Fake_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
-                                        Fake_FA_y[k]->Fill(s->y[j], 1.0 / efficiency * eventweight);
-                                    }
-                                }
-                                else
+                                if (gen_mass <= 60 || gen_mass >= 120)
                                 {
-                                    double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
                                     Fake_FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
                                     Fake_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
                                     Fake_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
                                     Fake_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
                                     Fake_FA_y[k]->Fill(s->y[j], 1.0 / efficiency * eventweight);
                                 }
+                            }
+                            else
+                            {
+                                double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+                                Fake_FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+                                Fake_FA_pT[k]->Fill(s->pT[j], 1.0 / efficiency * eventweight);
+                                Fake_FA_Eta[k]->Fill(s->eta[j], 1.0 / efficiency * eventweight);
+                                Fake_FA_Phi[k]->Fill(s->phi[j], 1.0 / efficiency * eventweight);
+                                Fake_FA_y[k]->Fill(s->y[j], 1.0 / efficiency * eventweight);
                             }
                         }
                     }
@@ -278,6 +276,5 @@ void get_all_bk_mc_fake(int type = 1)
         Normal_FA_Eta[i]->Write("", 2);
         Normal_FA_Phi[i]->Write("", 2);
         Normal_FA_y[i]->Write("", 2);
-        
     }
 }

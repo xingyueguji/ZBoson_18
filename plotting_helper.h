@@ -178,7 +178,7 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
     if (opt == 3)
       c1->SaveAs(Form("./newcomposite/eta/tnpD/composite_%i.pdf", x));
     if (opt == 4)
-      c1->SaveAs(Form("./newcomposite/eta/acooff/composite_%i.pdf", x));
+      c1->SaveAs(Form("./newcomposite/eta/acoon/composite_%i.pdf", x));
     if (opt == 6)
       c1->SaveAs(Form("./newcomposite/eta/massrange/composite_%i.pdf", x));
     if (opt == 7)
@@ -195,7 +195,7 @@ void plotting_helper::compositeplot(TH1D *h_1, TH1D *h_2, TH1D *h_3, TH1D *h_4, 
     if (opt == 3)
       c1->SaveAs(Form("./newcomposite/FA/tnpD/composite_%i.pdf", x));
     if (opt == 4)
-      c1->SaveAs(Form("./newcomposite/FA/acooff/composite_%i.pdf", x));
+      c1->SaveAs(Form("./newcomposite/FA/acoon/composite_%i.pdf", x));
     if (opt == 6)
       c1->SaveAs(Form("./newcomposite/FA/massrange/composite_%i.pdf", x));
     if (opt == 7)
@@ -235,11 +235,12 @@ void plotting_helper::setTDRStyle()
   TStyle *tdrStyle = new TStyle("tdrStyle", "Style for P-TDR");
 
   // For the canvas:
-  tdrStyle->SetCanvasBorderMode(0); // with or without line/dashed line as border
+  tdrStyle->SetPalette(kRainBow);
+  tdrStyle->SetCanvasBorderMode(0);
   tdrStyle->SetCanvasColor(kWhite);
   tdrStyle->SetCanvasDefH(600); // Height of canvas
   tdrStyle->SetCanvasDefW(600); // Width of canvas
-  tdrStyle->SetCanvasDefX(0);   // POsition on screen (GUI related)
+  tdrStyle->SetCanvasDefX(0);   // POsition on screen
   tdrStyle->SetCanvasDefY(0);
 
   // For the Pad:
@@ -261,12 +262,12 @@ void plotting_helper::setTDRStyle()
   tdrStyle->SetFrameLineStyle(1);
   tdrStyle->SetFrameLineWidth(1);
 
-  // For the histo: (I want to specify it later)
+  // For the histo:
   // tdrStyle->SetHistFillColor(1);
   // tdrStyle->SetHistFillStyle(0);
-  // tdrStyle->SetHistLineColor(1);
-  // tdrStyle->SetHistLineStyle(0);
-  // tdrStyle->SetHistLineWidth(1);
+  tdrStyle->SetHistLineColor(1);
+  tdrStyle->SetHistLineStyle(0);
+  tdrStyle->SetHistLineWidth(1);
   // tdrStyle->SetLegoInnerR(Float_t rad = 0.5);
   // tdrStyle->SetNumberContours(Int_t number = 20);
 
@@ -277,9 +278,9 @@ void plotting_helper::setTDRStyle()
   tdrStyle->SetMarkerStyle(20);
 
   // For the fit/function:
-  tdrStyle->SetOptFit(1);
-  tdrStyle->SetFitFormat("5.4g"); // 5 in width, 4 in digits after decimal, g = general
-  tdrStyle->SetFuncColor(2);      // All for TF1
+  tdrStyle->SetOptFit(0);
+  tdrStyle->SetFitFormat("5.4g");
+  tdrStyle->SetFuncColor(2);
   tdrStyle->SetFuncStyle(1);
   tdrStyle->SetFuncWidth(1);
 
@@ -304,10 +305,6 @@ void plotting_helper::setTDRStyle()
   // tdrStyle->SetStatY(Float_t y = 0);
 
   // Margins:
-  /*tdrStyle->SetPadTopMargin(0.05);
-  tdrStyle->SetPadBottomMargin(0.13);
-  tdrStyle->SetPadLeftMargin(0.16);
-  tdrStyle->SetPadRightMargin(0.02);*/
   tdrStyle->SetPadTopMargin(0.05);
   tdrStyle->SetPadBottomMargin(0.13);
   tdrStyle->SetPadLeftMargin(0.16);
@@ -315,7 +312,7 @@ void plotting_helper::setTDRStyle()
 
   // For the Global title:
 
-  tdrStyle->SetOptTitle(0);
+  // tdrStyle->SetOptTitle(0);
   tdrStyle->SetTitleFont(42);
   tdrStyle->SetTitleColor(1);
   tdrStyle->SetTitleTextColor(1);
@@ -332,11 +329,11 @@ void plotting_helper::setTDRStyle()
 
   tdrStyle->SetTitleColor(1, "XYZ");
   tdrStyle->SetTitleFont(42, "XYZ");
-  tdrStyle->SetTitleSize(0.05, "XYZ");
+  tdrStyle->SetTitleSize(0.5, "XYZ");
   // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
   // tdrStyle->SetTitleYSize(Float_t size = 0.02);
-  tdrStyle->SetTitleXOffset(1.1);
-  tdrStyle->SetTitleYOffset(1.45);
+  tdrStyle->SetTitleXOffset(0.9);
+  tdrStyle->SetTitleYOffset(1.25);
   // tdrStyle->SetTitleOffset(1.1, "Y"); // Another way to set the Offset
 
   // For the axis labels:
@@ -344,7 +341,7 @@ void plotting_helper::setTDRStyle()
   tdrStyle->SetLabelColor(1, "XYZ");
   tdrStyle->SetLabelFont(42, "XYZ");
   tdrStyle->SetLabelOffset(0.007, "XYZ");
-  tdrStyle->SetLabelSize(0.05, "XYZ");
+  tdrStyle->SetLabelSize(0.04, "XYZ");
 
   // For the axis:
 

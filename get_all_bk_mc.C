@@ -21,7 +21,7 @@
 #include <string>
 #include <cmath>
 
-void get_all_bk_mc(int opt = 3)
+void get_all_bk_mc(int opt = 1)
 {
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -56,13 +56,13 @@ void get_all_bk_mc(int opt = 3)
 	}
 
 	TEfficiency *e[11];
-	TEfficiency *e_without_aco[11];
+	TEfficiency *e_withaco[11];
 
 	TFile *eff_f1 = new TFile("./rootfile/mc_eff.root", "READ");
 	for (int i = 0; i < 11; i++)
 	{
 		e[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
-		e_without_aco[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_noAco_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
+		e_withaco[i] = (TEfficiency *)eff_f1->Get(Form("eff_noSF_withAco_%i_%i", s->cenlowlimit[i], s->cenhighlimit[i]));
 	}
 
 	// Histogram setup
@@ -73,35 +73,35 @@ void get_all_bk_mc(int opt = 3)
 	TH1D *FA_nominal[11];
 	TH1D *Eta_nominal[11];
 
-	TH1D *FA_AcoOff[11];
-	TH1D *Eta_AcoOff[11];
+	TH1D *FA_AcoOn[11];
+	TH1D *Eta_AcoOn[11];
 
-	TH1D* FA_mass_range[11];
-	TH1D* Eta_mass_range[11];
+	TH1D *FA_mass_range[11];
+	TH1D *Eta_mass_range[11];
 
 	TH1D *FA_tau_nominal[11];
 	TH1D *Eta_tau_nominal[11];
 
-	TH1D *FA_tau_AcoOff[11];
-	TH1D *Eta_tau_AcoOff[11];
+	TH1D *FA_tau_AcoOn[11];
+	TH1D *Eta_tau_AcoOn[11];
 
-	TH1D* FA_tau_mass_range[11];
-	TH1D* Eta_tau_mass_range[11];
+	TH1D *FA_tau_mass_range[11];
+	TH1D *Eta_tau_mass_range[11];
 
 	for (int i = 0; i < s->centarraysize; i++)
 	{
 		FA_nominal[i] = new TH1D(Form("FA_nominal_%i", i), "", 120, 60, 120);
 		Eta_nominal[i] = new TH1D(Form("Eta_nominal_%i", i), "", 120, 60, 120);
-		FA_AcoOff[i] = new TH1D(Form("FA_AcoOff_%i", i), "", 120, 60, 120);
-		Eta_AcoOff[i] = new TH1D(Form("Eta_AcoOff_%i", i), "", 120, 60, 120);
+		FA_AcoOn[i] = new TH1D(Form("FA_AcoOn_%i", i), "", 120, 60, 120);
+		Eta_AcoOn[i] = new TH1D(Form("Eta_AcoOn_%i", i), "", 120, 60, 120);
 
 		FA_mass_range[i] = new TH1D(Form("FA_mass_range_%i", i), "", 80, 70, 110);
 		Eta_mass_range[i] = new TH1D(Form("Eta_mass_range_%i", i), "", 80, 70, 110);
 
 		FA_tau_nominal[i] = new TH1D(Form("FA_tau_nominal_%i", i), "", 120, 60, 120);
 		Eta_tau_nominal[i] = new TH1D(Form("Eta_tau_nominal_%i", i), "", 120, 60, 120);
-		FA_tau_AcoOff[i] = new TH1D(Form("FA_tau_AcoOff_%i", i), "", 120, 60, 120);
-		Eta_tau_AcoOff[i] = new TH1D(Form("Eta_tau_AcoOff_%i", i), "", 120, 60, 120);
+		FA_tau_AcoOn[i] = new TH1D(Form("FA_tau_AcoOn_%i", i), "", 120, 60, 120);
+		Eta_tau_AcoOn[i] = new TH1D(Form("Eta_tau_AcoOn_%i", i), "", 120, 60, 120);
 
 		FA_tau_mass_range[i] = new TH1D(Form("FA_tau_mass_range_%i", i), "", 80, 70, 110);
 		Eta_tau_mass_range[i] = new TH1D(Form("Eta_tau_mass_range_%i", i), "", 80, 70, 110);
@@ -221,52 +221,54 @@ void get_all_bk_mc(int opt = 3)
 					{
 						if (!isTau)
 						{
-							if (passesAco[0])
-							{
-								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-								FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-								FA_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
-								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
-								{
-									double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-									Eta_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-									Eta_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-								}
-							}
-
-							double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
-							FA_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
+							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+							FA_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+							FA_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 							{
-								double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
-								Eta_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
+								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+								Eta_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+								Eta_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+							}
+
+							if (passesAco[0])
+							{
+								double efficiency_acoon = s->getEfficiency(e_withaco[k], s->y[j], s->pT[j]);
+								FA_AcoOn[k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight);
+
+								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+								{
+									double efficiency_acoon = s->getEfficiency(e_withaco[k], s->y[j], s->pT[j]);
+									Eta_AcoOn[k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight);
+								}
 							}
 						}
 						if (isTau)
 						{
-							if (passesAco[0])
-							{
-								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-								FA_tau_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-								FA_tau_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
-								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
-								{
-									double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
-									Eta_tau_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-									Eta_tau_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
-								}
-							}
-
-							double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
-							FA_tau_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
+							double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+							FA_tau_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+							FA_tau_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
 
 							if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
 							{
-								double efficiency_acooff = s->getEfficiency(e_without_aco[k], s->y[j], s->pT[j]);
-								Eta_tau_AcoOff[k]->Fill(s->mass[j], 1.0 / efficiency_acooff * eventweight);
+								double efficiency = s->getEfficiency(e[k], s->y[j], s->pT[j]);
+								Eta_tau_nominal[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+								Eta_tau_mass_range[k]->Fill(s->mass[j], 1.0 / efficiency * eventweight);
+							}
+
+							if (passesAco[0])
+							{
+								double efficiency_acoon = s->getEfficiency(e_withaco[k], s->y[j], s->pT[j]);
+								FA_tau_AcoOn[k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight);
+
+								if ((abs(s->EtaD1[j]) < 1) && (abs(s->EtaD2[j]) < 1))
+								{
+									double efficiency_acoon = s->getEfficiency(e_withaco[k], s->y[j], s->pT[j]);
+									Eta_tau_AcoOn[k]->Fill(s->mass[j], 1.0 / efficiency_acoon * eventweight);
+								}
 							}
 						}
 					}
@@ -290,20 +292,19 @@ void get_all_bk_mc(int opt = 3)
 	{
 		FA_nominal[i]->Write("", 2);
 		Eta_nominal[i]->Write("", 2);
-		FA_AcoOff[i]->Write("", 2);
-		Eta_AcoOff[i]->Write("", 2);
+		FA_AcoOn[i]->Write("", 2);
+		Eta_AcoOn[i]->Write("", 2);
 
 		FA_tau_nominal[i]->Write("", 2);
 		Eta_tau_nominal[i]->Write("", 2);
-		FA_tau_AcoOff[i]->Write("", 2);
-		Eta_tau_AcoOff[i]->Write("", 2);
+		FA_tau_AcoOn[i]->Write("", 2);
+		Eta_tau_AcoOn[i]->Write("", 2);
 
 		FA_mass_range[i]->Write("", 2);
 		Eta_mass_range[i]->Write("", 2);
 
 		FA_tau_mass_range[i]->Write("", 2);
 		Eta_tau_mass_range[i]->Write("", 2);
-		
 	}
 
 	histogram_file->Close();

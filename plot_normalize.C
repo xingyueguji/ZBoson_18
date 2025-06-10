@@ -1,10 +1,10 @@
 #include "plotting_helper.h"
-void plot_normalize(int opt = 6)
+void plot_normalize(int opt = 1)
 {
 	// opt == 1 nominal
 	// opt == 2 tnpU
 	// opt == 3 tnpD
-	// opt == 4 Acooff
+	// opt == 4 AcoOn
 	// opt == 6 Mass range
 	// opt == 7 HF up
 	// opt == 8 HF down
@@ -24,7 +24,7 @@ void plot_normalize(int opt = 6)
 	TFile *f_FA_nominal = new TFile("./rootfile/normalized/FA_nominal.root", "UPDATE");
 	TFile *f_FA_tnpU = new TFile("./rootfile/normalized/FA_tnpU.root", "UPDATE");
 	TFile *f_FA_tnpD = new TFile("./rootfile/normalized/FA_tnpD.root", "UPDATE");
-	TFile *f_FA_Acooff = new TFile("./rootfile/normalized/FA_acooff.root", "UPDATE");
+	TFile *f_FA_Acoon = new TFile("./rootfile/normalized/FA_acoon.root", "UPDATE");
 	TFile *f_FA_mass_range = new TFile("./rootfile/normalized/FA_mass_range.root", "UPDATE");
 	TFile *f_FA_HF_up = new TFile("./rootfile/normalized/FA_HF_up.root", "UPDATE");
 	TFile *f_FA_HF_down = new TFile("./rootfile/normalized/FA_HF_down.root", "UPDATE");
@@ -32,7 +32,7 @@ void plot_normalize(int opt = 6)
 	TFile *f_Eta_nominal = new TFile("./rootfile/normalized/Eta_nominal.root", "UPDATE");
 	TFile *f_Eta_tnpU = new TFile("./rootfile/normalized/Eta_tnpU.root", "UPDATE");
 	TFile *f_Eta_tnpD = new TFile("./rootfile/normalized/Eta_tnpD.root", "UPDATE");
-	TFile *f_Eta_Acooff = new TFile("./rootfile/normalized/Eta_acooff.root", "UPDATE");
+	TFile *f_Eta_Acoon = new TFile("./rootfile/normalized/Eta_acoon.root", "UPDATE");
 	TFile *f_Eta_mass_range = new TFile("./rootfile/normalized/Eta_mass_range.root", "UPDATE");
 	TFile *f_Eta_HF_up = new TFile("./rootfile/normalized/Eta_HF_up.root", "UPDATE");
 	TFile *f_Eta_HF_down = new TFile("./rootfile/normalized/Eta_HF_down.root", "UPDATE");
@@ -106,19 +106,19 @@ void plot_normalize(int opt = 6)
 		if (opt == 4)
 		{
 
-			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_AcoOff_%i", i));
-			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_AcoOff_%i", i));
-			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_AcoOff_%i", i));
-			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_AcoOff_%i", i));
-			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_AcoOff_%i", i));
-			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_acooff_%i", i));
+			h_FA_mcsignal[i] = (TH1D *)mc_signal->Get(Form("FA_AcoOn_%i", i));
+			h_FA_mcW[i] = (TH1D *)mc_w->Get(Form("FA_AcoOn_%i", i));
+			h_FA_mctt[i] = (TH1D *)mc_tt->Get(Form("FA_AcoOn_%i", i));
+			h_FA_mctau[i] = (TH1D *)mc_signal->Get(Form("FA_tau_AcoOn_%i", i));
+			h_FA_data[i] = (TH1D *)data_file->Get(Form("FA_AcoOn_%i", i));
+			h_FA_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_FA_acoon_%i", i));
 
-			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_AcoOff_%i", i));
-			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_AcoOff_%i", i));
-			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_AcoOff_%i", i));
-			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_AcoOff_%i", i));
-			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_AcoOff_%i", i));
-			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_acooff_%i", i));
+			h_Eta_mcsignal[i] = (TH1D *)mc_signal->Get(Form("Eta_AcoOn_%i", i));
+			h_Eta_mcW[i] = (TH1D *)mc_w->Get(Form("Eta_AcoOn_%i", i));
+			h_Eta_mctt[i] = (TH1D *)mc_tt->Get(Form("Eta_AcoOn_%i", i));
+			h_Eta_mctau[i] = (TH1D *)mc_signal->Get(Form("Eta_tau_AcoOn_%i", i));
+			h_Eta_data[i] = (TH1D *)data_file->Get(Form("Eta_AcoOn_%i", i));
+			h_Eta_samesign[i] = (TH1D *)mc_signal->Get(Form("samesign_Eta_acoon_%i", i));
 		}
 
 		if (opt == 6)
@@ -341,8 +341,8 @@ void plot_normalize(int opt = 6)
 		}
 		if (opt == 4)
 		{
-			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_Acooff);
-			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_Acooff);
+			ovo->savehistogram(h_normalized_mc_FA[i], h_normalized_data_FA[i], h_normalized_mc_bk_FA[i], i, f_FA_Acoon);
+			ovo->savehistogram(h_normalized_mc_Eta[i], h_normalized_data_Eta[i], h_normalized_mc_bk_Eta[i], i, f_Eta_Acoon);
 		}
 		if (opt == 6)
 		{
